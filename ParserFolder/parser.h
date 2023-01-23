@@ -3,7 +3,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "./AstFolder/ast.h"
+#include "../AstFolder/ast.h"
 
 
 using std::string;

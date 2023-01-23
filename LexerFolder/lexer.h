@@ -15,19 +15,21 @@ using std::regex;
 struct token
 {
     //regex pattern;
-    string tag;
-    string terminal;
+    const string tag;
+    const string terminal;
+
+    token();
+    token(const string&,const string&); //tag, terminal
 };
 
 class Lexer {
     private:
         vector<token> tokens;
-        const vector<string> split(const string&,const string&);
-        void decorate(const vector<string>&,const unordered_map<regex,string>&);
+        void split(const string&,const unordered_map<string,regex>&);
     public:
         Lexer();
         ~Lexer();
-        Lexer(const string&, const unordered_map<regex,string>&);
+        Lexer(const string&, const unordered_map<string,regex>&);
 };
 
 #endif

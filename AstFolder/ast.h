@@ -2,7 +2,9 @@
 #define _AST_HEADER_
 
 class Ast {
-
+    public:
+      Ast(){}
+      ~Ast(){}
 };
 
 #endif

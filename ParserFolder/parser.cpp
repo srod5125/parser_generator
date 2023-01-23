@@ -1,7 +1,7 @@
 #include <string>
 
 #include "parser.h"
-#include "./AstFolder/ast.h"
+#include "../AstFolder/ast.h"
 
 #include <iostream>
 
@@ -14,5 +14,6 @@ Parser::Parser(const std::string& dsl_rules) {
 }
 
 Ast Parser::getTree(const string& dsl_text){
-    
+    Ast a;
+    return a; // REMOVE later
 }
