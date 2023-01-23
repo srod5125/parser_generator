@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <regex>
+#include <iostream>
 
 
 using std::vector;
@@ -15,11 +16,12 @@ using std::regex;
 struct token
 {
     //regex pattern;
-    const string tag;
-    const string terminal;
+    string tag;
+    string terminal;
 
     token();
     token(const string&,const string&); //tag, terminal
+    //token(const string,const string); //tag, terminal
 };
 
 class Lexer {
@@ -27,9 +29,11 @@ class Lexer {
         vector<token> tokens;
         void split(const string&,const unordered_map<string,regex>&);
     public:
-        Lexer();
+        Lexer();//TODO: add default
         ~Lexer();
         Lexer(const string&, const unordered_map<string,regex>&);
+
+        friend std::ostream& operator<< (std::ostream&, const Lexer&);
 };
 
 #endif

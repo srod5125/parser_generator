@@ -2,17 +2,12 @@
 #include <string>
 
 #include "./ParserFolder/parser.h"
+#include "./Tests/tests.h"
+
 
 int main(){
-    std::cout << "ass" << std::endl;
-    std::string a{"sdf"};
-    
-    std::string b;
+    runAllTest();
 
-    std::cin >> b;
-    std::cout << b << std::endl;
-
-    Parser p{a};
     return 0;
 }
 
@@ -20,7 +15,7 @@ int main(){
 
 //TODO: overload << operator for lexor
 //TODO: set base class that raises errors
-//TODO: put classes in subfolders
+//TODO: implement testing class
 
 /*
     layer ; lexer : 0, parser : 1
