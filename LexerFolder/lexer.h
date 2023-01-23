@@ -20,7 +20,7 @@ struct token
     string terminal;
 
     token();
-    token(const string&,const string&); //tag, terminal
+    token(const string&,const string&); //tag, terminal  //ERROR: cannot initliaze memebers
     //token(const string,const string); //tag, terminal
 };
 

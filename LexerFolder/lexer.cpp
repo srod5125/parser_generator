@@ -23,7 +23,7 @@ using std::pair;
 
 
 token::token() : tag("EMPTY"), terminal("\0") {} // empty token init
-token::token(const string& t,const string& ter) : tag(t), terminal(terminal) {std::cout<<"constructor "<<terminal<<std::endl;}
+token::token(const string& t,const string& ter) : tag(t), terminal(terminal) { } //std::cout<<"constructor "<<terminal<<std::endl;}
 //token::token(const string t,const string ter) : tag{t}, terminal{terminal} {}
 
 void Lexer::split(const string& t, const unordered_map<string,regex>& patternAndTag){
@@ -38,6 +38,7 @@ void Lexer::split(const string& t, const unordered_map<string,regex>& patternAnd
             //map inserts by sort automatically, we instert by postion
             //std::cout << pattern.first << " " << matchIter->str() << std::endl;
             token t;
+            //token t{pattern.first, matchIter->str()} //ERROR here
             t.tag = pattern.first;
             t.terminal = matchIter->str();
             sortedMap.insert( pair<std::size_t,token>(matchIter->position(),t));
@@ -45,10 +46,6 @@ void Lexer::split(const string& t, const unordered_map<string,regex>& patternAnd
     }
     //unpack contents of sorted map into tokens array
     for(auto& tok: sortedMap){
-        //std::cout << tok.second.first << " " << tok.second.second << std::endl;
-        //std::cout << tok.first << " " << tok.second << std::endl;
-        //token t{tok.second.first, tok.second.second};
-        //std::cout << t.tag;
         tokens.push_back(tok.second);
     }
 }

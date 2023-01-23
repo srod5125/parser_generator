@@ -2,6 +2,6 @@
 #define _TEST_HEADER_
 
 void runAllTest();
-void testLexer();
+void testLexer1();
 
 #endif

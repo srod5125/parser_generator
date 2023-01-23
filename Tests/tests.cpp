@@ -14,7 +14,7 @@ using std::unordered_map;
 using std::regex;
 
 //isolated test for lexer to see if it splits string correctly
-void testLexer(){
+void testLexer1(){
     string text{"gg 123 gg"};
     
     regex r1("gg");
@@ -30,5 +30,5 @@ void testLexer(){
 }
 
 void runAllTest(){
-    testLexer();
+    testLexer1();
 }
