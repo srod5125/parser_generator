@@ -17,6 +17,7 @@ struct token
     token();
     token(const string&,const string&); //tag, terminal  //ERROR: cannot initliaze memebers
     token(const string&&,const string&&); 
+    token(const string&&); 
     //token(const string,const string); //tag, terminal
 };
 

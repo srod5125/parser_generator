@@ -45,12 +45,12 @@ struct state{
 
 class Dfa {
     private:
-        set<string> first(const string&);
         void closure(state);//calls goto
         unique_ptr<state> goToState(line);//recurisve calls clojure, should know whther stat has been set
         unordered_map<string,symbol> grammar;
         state start;
     public:
+        set<string> first(const string&);
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
