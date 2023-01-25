@@ -7,22 +7,13 @@
 #include <regex>
 #include <iostream>
 
+#include "../CommonFolder/common.h"
 
 using std::vector;
 using std::string;
 using std::unordered_map;
 using std::regex;
 
-struct token
-{
-    //regex pattern;
-    string tag;
-    string terminal;
-
-    token();
-    token(const string&,const string&); //tag, terminal  //ERROR: cannot initliaze memebers
-    //token(const string,const string); //tag, terminal
-};
 
 class Lexer {
     private:
@@ -32,6 +23,7 @@ class Lexer {
         Lexer();//TODO: add default
         ~Lexer();
         Lexer(const string&, const unordered_map<string,regex>&);
+        const vector<token>& getTokens();
 
         friend std::ostream& operator<< (std::ostream&, const Lexer&);
 };

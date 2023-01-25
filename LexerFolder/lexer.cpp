@@ -16,15 +16,14 @@ using std::regex;
 using std::sregex_iterator;
 using std::pair;
 
+#include "../CommonFolder/common.h"
 #include "lexer.h"
+
+struct token;
 
 //split string
 //https://java2blog.com/split-string-space-cpp/
 
-
-token::token() : tag("EMPTY"), terminal("\0") {} // empty token init
-token::token(const string& t,const string& ter) : tag(t), terminal(terminal) { } //std::cout<<"constructor "<<terminal<<std::endl;}
-//token::token(const string t,const string ter) : tag{t}, terminal{terminal} {}
 
 void Lexer::split(const string& t, const unordered_map<string,regex>& patternAndTag){
     // regex + tag name ; ex : /[0-9]+/, (NUMBER, '123')
@@ -38,7 +37,7 @@ void Lexer::split(const string& t, const unordered_map<string,regex>& patternAnd
             //map inserts by sort automatically, we instert by postion
             //std::cout << pattern.first << " " << matchIter->str() << std::endl;
             token t;
-            //token t{pattern.first, matchIter->str()} //ERROR here
+            //token t(pattern.first, matchIter->str()); //ERROR here
             t.tag = pattern.first;
             t.terminal = matchIter->str();
             sortedMap.insert( pair<std::size_t,token>(matchIter->position(),t));
@@ -59,7 +58,11 @@ std::ostream& operator<< (std::ostream& out, const Lexer& l)
     return out;
 }
 
-Lexer::Lexer():tokens{} { } // TODO: add default token
+const vector<token>& Lexer::getTokens(){
+    return tokens;
+}
+
+Lexer::Lexer(): tokens{} { } // TODO: add default token
 Lexer::~Lexer(){ }
 
 Lexer::Lexer(const string& text, const unordered_map<string,regex>& patternAndTag){
@@ -67,4 +70,3 @@ Lexer::Lexer(const string& text, const unordered_map<string,regex>& patternAndTa
     //decorate(split(text,space), regexTagMap); // split stream passed to decorator
     split(text,patternAndTag);
 }
-

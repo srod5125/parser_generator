@@ -2,6 +2,7 @@
 
 #include "parser.h"
 #include "../AstFolder/ast.h"
+#include "../CommonFolder/common.h"
 
 #include <iostream>
 

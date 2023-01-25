@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "./CommonFolder/common.h"
 #include "./ParserFolder/parser.h"
 #include "./Tests/tests.h"
 
