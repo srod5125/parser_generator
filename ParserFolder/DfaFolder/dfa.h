@@ -47,10 +47,13 @@ class Dfa {
     private:
         void closure(state);//calls goto
         unique_ptr<state> goToState(line);//recurisve calls clojure, should know whther stat has been set
+        
+        bool hasEpsilonProduction(string);
+        set<string> first(const string&);
+        
         unordered_map<string,symbol> grammar;
         state start;
     public:
-        set<string> first(const string&);
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();

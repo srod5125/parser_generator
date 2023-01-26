@@ -39,19 +39,46 @@ set<string> Dfa::first(const string& sym){
         set<string> x;
         for(const auto& seq : grammar[sym].production_rule){
             if(!seq.empty()){
-                for(const auto& i: seq){
-                    if(grammar[i].isTerminal){
-                        x.insert(i);
-                        break;
-                    }
-                    else{
-                        //union
-                        set<string> tmp = first(i);
+                if(grammar[seq[0]].isTerminal){
+                    x.insert(seq[0]);
+                }
+                else{
+
+                    if(!hasEpsilonProduction(seq[0])){
+                        set<string> tmp = first(seq[0]);
                         x.insert(tmp.begin(),tmp.end());
+                    }
+                    else {
+                        set<string> tmp = first(seq[0]);
+                        tmp.erase("EMPTY");
+                        x.insert(tmp.begin(),tmp.end());
+
+                        for(int i=1;i<seq.size();i+=1){
+                            if(grammar[seq[i]].isTerminal){
+                                x.insert(seq[i]);
+                                break;
+                            }
+                            else{
+                                set<string> tmp = first(seq[i]);
+                                x.insert(tmp.begin(),tmp.end());
+                            }
+                        }
                     }
                 }
             }
         }
         return x;
     }
+}
+
+bool Dfa::hasEpsilonProduction(string nonterminal){
+    bool hasEpsilonProduction{false};
+    for(const auto& i: grammar[nonterminal].production_rule){
+        if(!i.empty()){
+            if(i.size()==1 && i[0]=="EMPTY"){
+                hasEpsilonProduction=true;
+            }
+        }
+    }
+    return hasEpsilonProduction;
 }

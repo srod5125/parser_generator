@@ -52,14 +52,25 @@ void testFirstDfa(){
     grammer[")"] = symbol({")"});
     grammer["id"] = symbol({"id"});
 
-    Dfa d{grammer};
+    unordered_map<string,symbol> grammer2;
+    grammer2["E"] = symbol("E",{{"T","X"}});
+    grammer2["X"] = symbol("X",{{"+","E"},{"EMPTY"}});
+    grammer2["EMPTY"] = symbol();
+    grammer2["T"] = symbol("T",{{"int","Y"},{"(","E",")"}});
+    grammer2["("] = symbol({"("});
+    grammer2[")"] = symbol({")"});
+    grammer["int"] = symbol({"int"});
+    grammer2["Y"] = symbol("Y",{{"*","T"},{"EMPTY"}});
+    grammer2["*"] = symbol({"*"});
+
+    Dfa d{grammer2};
     string tmp = "E";
-    set<string> x = d.first(tmp);
-    std::cout << "First(" << tmp << "): ";
-    printSet(x);
+    //set<string> x = d.first(tmp); //make public to test
+    //std::cout << "First(" << tmp << "): ";
+    //printSet(x);
 }
 
 void runAllTest(){
-    testFirstDfa();
-    //testLexer1();
+    //testFirstDfa();
+    testLexer1();
 }
