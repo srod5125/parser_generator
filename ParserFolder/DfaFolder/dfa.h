@@ -20,22 +20,25 @@ using std::string;
 //dot position, production list, lookahead set
 struct line {
     int dotPosition;
-    string tag;
-    vector<string> production_list; // s-> ABB
+    symbol prod; // s-> ABB
     set<string> lookahead;
 
-    line(int,string&&,vector<string>&&,set<string>&&);
+    line(int,symbol&&,set<string>&&);
+    line(int,symbol&,set<string>&&);
+    line(int,symbol&,set<string>&);
+    line(int,symbol&&,set<string>&);
 };
-enum status : char{
+enum class status : char{
     accept,
     closed,
+    temp,
 };
 //list of lines, list of transitions
 struct state{
     vector<line> productions;
-    unordered_map<string, unique_ptr<state> > transitions;
+    //unordered_map<string, unique_ptr<state> > transitions;
     int stateNum;
-    status s;
+    status rank;
 
     state();
     state(int,line);
@@ -45,18 +48,18 @@ struct state{
 
 class Dfa {
     private:
-        void closure(state);//calls goto
         unique_ptr<state> goToState(line);//recurisve calls clojure, should know whther stat has been set
         
         bool hasEpsilonProduction(string);
         set<string> first(const string&);
-        
+
         unordered_map<string,symbol> grammar;
-        state start;
+        unique_ptr<state> startPtr;
     public:
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
+        void closure(state);//calls goto
 };
 
 #endif

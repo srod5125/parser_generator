@@ -40,12 +40,12 @@ void printSet(const set<string>& x){
 }
 void testFirstDfa(){
     unordered_map<string,symbol> grammer;
-    grammer["E"] = symbol("E",{{"T","E'"}});
+    grammer["E"] = symbol("E",vector<string>{"T","E'"});
     grammer["E'"] = symbol("E'",{{"+","T","E'"},{"EMPTY"}});
     grammer["+"] = symbol({"+"});
     grammer["EMPTY"] = symbol();
-    grammer["T"] = symbol("T",{{"F","T'"}});
-    grammer["T'"] = symbol("T'",{{"*","T'"},{"EMPTY"}});
+    grammer["T"] = symbol("T",vector<string>{"F","T'"});
+    grammer["T'"] = symbol("T'",vector<vector<string>>{{"*","T'"},{"EMPTY"}});
     grammer["*"] = symbol({"*"});
     grammer["F"] = symbol("F",{{"(","E",")"},{"id"}});
     grammer["("] = symbol({"("});
@@ -53,14 +53,14 @@ void testFirstDfa(){
     grammer["id"] = symbol({"id"});
 
     unordered_map<string,symbol> grammer2;
-    grammer2["E"] = symbol("E",{{"T","X"}});
-    grammer2["X"] = symbol("X",{{"+","E"},{"EMPTY"}});
+    grammer2["E"] = symbol("E",vector<string>{"T","X"});
+    grammer2["X"] = symbol("X",vector<vector<string>>{{"+","E"},{"EMPTY"}});
     grammer2["EMPTY"] = symbol();
     grammer2["T"] = symbol("T",{{"int","Y"},{"(","E",")"}});
     grammer2["("] = symbol({"("});
     grammer2[")"] = symbol({")"});
     grammer["int"] = symbol({"int"});
-    grammer2["Y"] = symbol("Y",{{"*","T"},{"EMPTY"}});
+    grammer2["Y"] = symbol("Y",vector<vector<string>>{{"*","T"},{"EMPTY"}});
     grammer2["*"] = symbol({"*"});
 
     Dfa d{grammer2};
@@ -70,7 +70,25 @@ void testFirstDfa(){
     //printSet(x);
 }
 
+void testDfaClosure(){
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",vector<string>{"A","A"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    grammer["S'"] = symbol("S'",{"S"});
+    grammer["a"] = symbol({"a"});
+    grammer["b"] = symbol({"b"});
+
+    line l = line(0,grammer["S'"],{"$"});
+    //line l = line(1,grammer["A"],{"a","b"});
+    state s = state(0,l);
+
+    Dfa d{grammer};
+
+    d.closure(s);
+}
+
 void runAllTest(){
     //testFirstDfa();
-    testLexer1();
+    //testLexer1();
+    testDfaClosure();
 }

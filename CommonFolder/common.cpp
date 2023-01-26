@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <iostream>
 
 
 using std::string;
@@ -19,11 +20,14 @@ symbol::symbol(const string&& n, const vector<vector<string>>&& rules){
     name=n;
     production_rule = rules;
 }
-symbol::symbol(const string&& n, const string&& t){
-    isTerminal=true;
+symbol::symbol(const string&& n,  const vector<string>&& p) : name{n}{
+    isTerminal=false;
+    production_rule.emplace_back(p);
+}
+symbol::symbol(const string& n, const vector<string>&& p){
     name=n;
-    this->t.tag = n;
-    this->t.terminal = t;
+    isTerminal=false;
+    production_rule.emplace_back(p);
 }
 symbol::symbol(token& t){
     isTerminal=true;
@@ -34,5 +38,33 @@ symbol::symbol(token&& t){
     isTerminal=true;
     name=t.tag;
     t=t;
+}
+std::ostream& operator<< (std::ostream& out, const symbol& sym){
+    if(sym.isTerminal){
+        if(sym.t.tag == sym.t.terminal){
+            out << sym.name;
+        }
+        else{
+            out << sym.t.tag << "\t:\t" << sym.t.terminal;
+        }
+    }
+    else{
+        out << sym.name << "\t->\t";
+        out << "{ ";
+        for(const auto& seq: sym.production_rule){
+            out << "{ ";
+            for(const auto& el: seq){
+                out << el;
+                if(&el != &seq.back()){
+                    out << ",";
+                }
+                out << " ";
+            }
+            out << "} ";
+        }
+        out << " }";
+    }
+
+    return out;
 }
 

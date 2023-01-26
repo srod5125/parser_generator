@@ -31,7 +31,8 @@ struct symbol{
 
     symbol();
     symbol(const string&&, const vector<vector<string>>&&); //name,  r value initilization for production_rule
-    symbol(const string&&, const string&&);
+    symbol(const string&&, const vector<string>&&);
+    symbol(const string&, const vector<string>&&);
     symbol(token&);
     symbol(token&&);
 

@@ -9,5 +9,6 @@
 void runAllTest();
 void testLexer1();
 void testFirstDfa();
+void testDfaClosure();
 
 #endif
