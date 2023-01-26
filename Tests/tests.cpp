@@ -84,7 +84,7 @@ void testDfaClosure(){
 
     Dfa d{grammer};
 
-    d.closure(s);
+    //d.closure(s); //make public to call
 }
 
 void runAllTest(){

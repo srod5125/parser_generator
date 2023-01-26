@@ -78,11 +78,11 @@ std::ostream& operator<< (std::ostream& out, const state& s){
         out << "}" << std::endl;
     }
     //print transition connections //TODO: fix
-    // out << "CONNECTIONS:\t";
-    // for(const auto& t: s.transitions){
-    //     out << t.first;
-    // }
-    // out << std::endl << std::endl;
+    out << "CONNECTIONS:\t";
+    for(const auto& t: s.transitions){
+        out << t.first;
+    }
+    out << std::endl << std::endl;
 
     return out;
 }
@@ -187,4 +187,8 @@ void Dfa::closure(state s){
     }
 
     std::cout << s;
+}
+//HERE
+unique_ptr<state> Dfa::goToState(line l){
+
 }

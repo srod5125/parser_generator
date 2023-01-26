@@ -14,6 +14,7 @@ using std::unordered_map;
 using std::set;
 using std::vector;
 using std::unique_ptr;
+using std::shared_ptr;
 using std::string;
 
 
@@ -36,7 +37,7 @@ enum class status : char{
 //list of lines, list of transitions
 struct state{
     vector<line> productions;
-    //unordered_map<string, unique_ptr<state> > transitions;
+    unordered_map<string, shared_ptr<state> > transitions; //one way pointer to new state
     int stateNum;
     status rank;
 
@@ -49,6 +50,7 @@ struct state{
 class Dfa {
     private:
         unique_ptr<state> goToState(line);//recurisve calls clojure, should know whther stat has been set
+        void closure(state);//calls goto
         
         bool hasEpsilonProduction(string);
         set<string> first(const string&);
@@ -59,7 +61,6 @@ class Dfa {
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
-        void closure(state);//calls goto
 };
 
 #endif
