@@ -79,12 +79,14 @@ void testDfaClosure(){
     grammer["b"] = symbol({"b"});
 
     line l = line(0,grammer["S'"],{"$"});
+    set<line> x;
+    x.insert(l);
     //line l = line(1,grammer["A"],{"a","b"});
-    state s = state(0,l);
+    //state s = state(0,l);
 
     Dfa d{grammer};
 
-    //d.closure(s); //make public to call
+    //d.closure(x);
 }
 
 void runAllTest(){
