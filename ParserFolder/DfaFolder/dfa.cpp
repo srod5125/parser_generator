@@ -266,5 +266,8 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
 }
 //HERE
 void Dfa::goToState(state){
-
+    //map (string,set(lines))
+    //at dot position
+    //if state was already constructed set pointer to that
+    //set transition to string -> state
 }

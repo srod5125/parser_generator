@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-
+//must accept start as nonterminal symbol
 Parser::Parser() :dsl_string{""} { }
 Parser::~Parser() { }
 
