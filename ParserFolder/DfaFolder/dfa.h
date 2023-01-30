@@ -2,7 +2,7 @@
 #define _DFA_HEADER_
 
 #include <unordered_map>
-#include <set>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "../../CommonFolder/common.h"
 
 using std::unordered_map;
-using std::set;
+using std::unordered_set;
 using std::vector;
 using std::unique_ptr;
 using std::shared_ptr;
@@ -22,27 +22,34 @@ using std::string;
 struct line {
     int dotPosition;
     symbol prod; // s-> ABB
-    set<string> lookahead;
+    unordered_set<string> lookahead;
 
-    line(int,symbol&&,set<string>&&);
-    line(int,symbol&,set<string>&&);
-    line(int,symbol&,set<string>&);
-    line(int,symbol&&,set<string>&);
+    line(int,symbol&&,unordered_set<string>&&);
+    line(int,symbol&,unordered_set<string>&&);
+    line(int,symbol&,unordered_set<string>&);
+    line(int,symbol&&,unordered_set<string>&);
+
+    friend bool operator==(const line&, const line&);
+    struct hash
+    {
+        std::size_t operator()( const line& ) const;
+    };
 };
 enum class status : char{
     accept,
     closed,
-    temp,
+    intermediate,
 };
 //list of lines, list of transitions
 struct state{
-    vector<line> productions;
+    unordered_set<line,line::hash> productions;
     unordered_map<string, shared_ptr<state> > transitions; //one way pointer to new state
     int stateNum;
     status rank;
 
     state();
     state(int,line);
+    state(const unordered_set<line,line::hash>&);
 
     friend std::ostream& operator<< (std::ostream&, const state&);
 };
@@ -50,10 +57,9 @@ struct state{
 class Dfa {
     private:
         void goToState(state);//recurisve calls clojure, should know whther stat has been set
-        void closure(state);//calls goto
         
         bool hasEpsilonProduction(string);
-        set<string> first(const string&);
+        unordered_set<string> first(const string&);
 
         unordered_map<string,symbol> grammar;
         unique_ptr<state> startPtr;
@@ -61,6 +67,7 @@ class Dfa {
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
+        state closure(unordered_set<line,line::hash>);//calls goto
 };
 
 #endif

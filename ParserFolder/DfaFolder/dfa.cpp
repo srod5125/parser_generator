@@ -12,35 +12,60 @@ using std::string;
 using std::vector;
 using std::set;
 
-
-line::line(int pos,symbol&& sym,set<string>&& lk){
+// ----------- line ---------
+line::line(int pos,symbol&& sym,unordered_set<string>&& lk){
     dotPosition = pos;
     prod = sym;
     lookahead = lk;
 }
-line::line(int pos,symbol& sym,set<string>&& lk){
+line::line(int pos,symbol& sym,unordered_set<string>&& lk){
     dotPosition = pos;
     prod = sym;
     lookahead = lk;
 }
-line::line(int pos,symbol& sym,set<string>& lk){
+line::line(int pos,symbol& sym,unordered_set<string>& lk){
     dotPosition = pos;
     prod = sym;
     lookahead = lk;
 }
-line::line(int pos,symbol&& sym,set<string>& lk){
+line::line(int pos,symbol&& sym,unordered_set<string>& lk){
     dotPosition = pos;
     prod = sym;
     lookahead = lk;
 }
-
-state::state(){
-
+std::size_t line::hash::operator()( const line& l) const{
+    std::size_t acc = std::hash<string>()(l.prod.name);
+    for(const auto& el: l.prod.production_rule[0]){
+        acc = acc ^ std::hash<string>()(el);
+    }
+    for(const auto& el: l.lookahead){
+        acc = acc ^ std::hash<string>()(el);
+    }
+    return acc;
 }
-state::state(int n, line l){
+bool operator==(const line& lhs, const line& rhs){
+    bool same = lhs.prod.name == rhs.prod.name;
+    if(!same) {return false;}
+    same = lhs.prod.production_rule[0].size() == rhs.prod.production_rule[0].size();
+    if(!same) {return false;}
+    for(int i=0;i<lhs.prod.production_rule[0].size() && i<rhs.prod.production_rule[0].size(); i+=1){
+        same = lhs.prod.production_rule[0][i] == rhs.prod.production_rule[0][i];
+        if(!same) {return false;}
+    }
+    same = lhs.lookahead.size() == rhs.lookahead.size();
+    if(!same) {return false;}
+    same = lhs.lookahead == rhs.lookahead;
+    if(!same) {return false;}
+    return true;
+}
+// -------------- state ----------
+state::state() : stateNum{-1}, rank{status::intermediate}, productions{} { }
+state::state(int n, line l) : rank{status::intermediate} {
     stateNum = n;
-    productions.emplace_back(l);
-    rank = status::temp;
+    productions.insert(l);
+}
+state::state(const unordered_set<line,line::hash>& lineSet) : stateNum{-1}, rank{status::intermediate} {
+    productions = lineSet;
 }
 std::ostream& operator<< (std::ostream& out, const state& s){
     //num status
@@ -52,6 +77,9 @@ std::ostream& operator<< (std::ostream& out, const state& s){
             break;
         case status::closed:
             out << "CLOSED";
+            break;
+        case status::intermediate:
+            out << "INTERMEDIATE";
             break;
         default:
             break;
@@ -87,6 +115,8 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     return out;
 }
 
+// -------------- dfa ----------
+
 Dfa::Dfa(const unordered_map<string,symbol>& g){
     grammar = g;
 
@@ -104,13 +134,13 @@ Dfa::~Dfa(){
     startPtr = std::make_unique<state>(0,augmentedStart);
 }
 
-set<string> Dfa::first(const string& sym){
+unordered_set<string> Dfa::first(const string& sym){
     if(grammar[sym].isTerminal){ //handles null case
-        set<string> x{sym};
+        unordered_set<string> x{sym};
         return x;
     }
     else {
-        set<string> x;
+        unordered_set<string> x;
         for(const auto& seq : grammar[sym].production_rule){
             if(!seq.empty()){
                 if(grammar[seq[0]].isTerminal){
@@ -119,11 +149,11 @@ set<string> Dfa::first(const string& sym){
                 else{
 
                     if(!hasEpsilonProduction(seq[0])){
-                        set<string> tmp = first(seq[0]);
+                        unordered_set<string> tmp = first(seq[0]);
                         x.insert(tmp.begin(),tmp.end());
                     }
                     else {
-                        set<string> tmp = first(seq[0]);
+                        unordered_set<string> tmp = first(seq[0]);
                         tmp.erase("EMPTY");
                         x.insert(tmp.begin(),tmp.end());
 
@@ -133,7 +163,7 @@ set<string> Dfa::first(const string& sym){
                                 break;
                             }
                             else{
-                                set<string> tmp = first(seq[i]);
+                                unordered_set<string> tmp = first(seq[i]);
                                 x.insert(tmp.begin(),tmp.end());
                             }
                         }
@@ -157,36 +187,52 @@ bool Dfa::hasEpsilonProduction(string nonterminal){
     return hasEpsilonProduction;
 }
 
-void Dfa::closure(state s){
-    for(int i=0,n=s.productions.size();i<n;i+=1){
-        //0 is first rule
-        if(s.productions[i].dotPosition < s.productions[i].prod.production_rule[0].size())
+state Dfa::closure(unordered_set<line,line::hash> lineSet){
+    
+    if(lineSet.size()==1){
+        state s = state(lineSet);
+        auto lineSetIter = lineSet.begin();
+        if(lineSetIter->dotPosition >= lineSetIter->prod.production_rule[0].size()){ // s-> aAb o
+            s.rank = status::closed;
+            if(lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START"){
+                s.rank = status::accept;
+            }
+            std::cout << s;
+            return s;
+        } 
+    }
+    
+
+    unordered_set<line,line::hash> aux;
+    auto lineSetIter = lineSet.begin();
+    while(!lineSet.empty()){
+        lineSetIter = lineSet.begin();
+
+        if(lineSetIter->dotPosition < lineSetIter->prod.production_rule[0].size())
         {
-            string currentDotPosString = s.productions[i].prod.production_rule[0][s.productions[i].dotPosition];
+            string currentDotPosString{lineSetIter->prod.production_rule[0][lineSetIter->dotPosition]};
             if(!grammar[currentDotPosString].isTerminal){
                 for(const auto& prods: grammar[currentDotPosString].production_rule){
                     //get lookahead
-                    set<string> x = i==0 ? s.productions[0].lookahead : s.productions[i-1].lookahead;
-                    if(s.productions[i].dotPosition+1 < s.productions[i].prod.production_rule[0].size()){
-                        x = first(s.productions[i].prod.production_rule[0][s.productions[i].dotPosition+1]);
+                    unordered_set<string> x = lineSetIter->lookahead;
+                    if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
+                        x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1]);
                     }
                     line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
-                    
-                    s.productions.emplace_back(newLine);
-                    n+=1;
+                    //introduce new memebers
+                    lineSet.insert(newLine);
                 }
             }
         }
-        else{
-            if(s.productions.size()==1){
-                //if s->Abc o , terminate early and set rank to closed
-                s.rank = status::closed;
-                break;
-            }
-        }
+        //delete current memeber
+        aux.insert(*lineSetIter);
+        lineSet.erase(lineSetIter);
     }
 
-    std::cout << s;
+    state sI = state(aux);
+    std::cout << sI;
+    return sI;
+
 }
 //HERE
 void Dfa::goToState(state){

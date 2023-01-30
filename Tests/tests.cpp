@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <regex>
-#include <iostream>
-#include <set>
+#include <unordered_set>
+#include <vector>
 
 #include "tests.h"
 
@@ -15,7 +15,8 @@
 using std::string;
 using std::unordered_map;
 using std::regex;
-using std::set;
+using std::unordered_set;
+using std::vector;
 
 //isolated test for lexer to see if it splits string correctly
 void testLexer1(){
@@ -32,7 +33,7 @@ void testLexer1(){
 
     std::cout << l;
 }
-void printSet(const set<string>& x){
+void printSet(const unordered_set<string>& x){
     for(const auto& el: x){
         std::cout << el << " ";
     }
@@ -49,16 +50,27 @@ void testDfaClosure(){
     grammer["S'"] = symbol("S'",{"S"});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
+    
+    unordered_map<string,symbol> grammer2;
+    grammer2["E'"] = symbol("E'",{"E"});
+    grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
+    grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
+    grammer2["*"] = symbol({"*"});
+    grammer2["+"] = symbol({"+"});
+    grammer2["("] = symbol({"("});
+    grammer2[")"] = symbol({")"});
+    grammer2["id"] = symbol({"id"});
 
-    line l = line(0,grammer["S'"],{"$"});
-    //set<line> x;
-    //x.insert(l);
+    line l = line(0,grammer2["E'"],{"$"});
     //line l = line(1,grammer["A"],{"a","b"});
+    unordered_set<line,line::hash> x;
+    x.insert(l);
     //state s = state(0,l);
 
     Dfa d{grammer};
 
-    //d.closure(s); //make public to call
+    d.closure(x); //make public to call
 }
 
 void runAllTest(){
