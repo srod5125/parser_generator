@@ -59,12 +59,13 @@ bool operator==(const line& lhs, const line& rhs){
     return true;
 }
 // -------------- state ----------
-state::state() : stateNum{-1}, rank{status::intermediate}, productions{} { }
-state::state(int n, line l) : rank{status::intermediate} {
+state::state() : stateNum{-1}, rank{status::intermediate}, productions{}, transitions{} { }
+state::state(int n, line l) : rank{status::intermediate}, transitions{} {
     stateNum = n;
     productions.insert(l);
 }
-state::state(const unordered_set<line,line::hash>& lineSet) : stateNum{-1}, rank{status::intermediate} {
+state::state(const unordered_set<line,line::hash>& lineSet)
+: stateNum{-1}, rank{status::intermediate}, transitions{} {
     productions = lineSet;
 }
 std::ostream& operator<< (std::ostream& out, const state& s){
@@ -189,6 +190,7 @@ bool Dfa::hasEpsilonProduction(string nonterminal){
 
 state Dfa::closure(unordered_set<line,line::hash> lineSet){
     
+    //redo rank logic to handle more terminal cases, 
     if(lineSet.size()==1){
         state s = state(lineSet);
         auto lineSetIter = lineSet.begin();
@@ -204,23 +206,31 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
     
 
     unordered_set<line,line::hash> aux;
+    unordered_map<string,int> alreadySeen;
     auto lineSetIter = lineSet.begin();
+
     while(!lineSet.empty()){
         lineSetIter = lineSet.begin();
 
         if(lineSetIter->dotPosition < lineSetIter->prod.production_rule[0].size())
         {
             string currentDotPosString{lineSetIter->prod.production_rule[0][lineSetIter->dotPosition]};
+            
             if(!grammar[currentDotPosString].isTerminal){
-                for(const auto& prods: grammar[currentDotPosString].production_rule){
-                    //get lookahead
-                    unordered_set<string> x = lineSetIter->lookahead;
-                    if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
-                        x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1]);
+                //check if production has already been added at this dotposition
+                if(alreadySeen.find(currentDotPosString) == alreadySeen.end()){ //not present
+
+                    for(const auto& prods: grammar[currentDotPosString].production_rule){
+                        //get lookahead
+                        unordered_set<string> x = lineSetIter->lookahead;
+                        if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
+                            x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1]);
+                        }
+                        line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
+                        //introduce new memebers
+                        lineSet.insert(newLine);
                     }
-                    line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
-                    //introduce new memebers
-                    lineSet.insert(newLine);
+                    alreadySeen[currentDotPosString] = lineSetIter->dotPosition; // set to already seen
                 }
             }
         }

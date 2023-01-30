@@ -45,14 +45,14 @@ void testFirstDfa(){
 
 void testDfaClosure(){
     unordered_map<string,symbol> grammer;
+    grammer["S'"] = symbol("S'",{"S"});
     grammer["S"] = symbol("S",vector<string>{"A","A"});
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
-    grammer["S'"] = symbol("S'",{"S"});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
     
     unordered_map<string,symbol> grammer2;
-    grammer2["E'"] = symbol("E'",{"E"});
+    grammer2["S'"] = symbol("S'",{"E"});
     grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
     grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
     grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
@@ -62,12 +62,11 @@ void testDfaClosure(){
     grammer2[")"] = symbol({")"});
     grammer2["id"] = symbol({"id"});
 
-    line l = line(0,grammer2["E'"],{"$"});
+    line l = line(0,grammer["S'"],{"$"});
     //line l = line(1,grammer["A"],{"a","b"});
     unordered_set<line,line::hash> x;
     x.insert(l);
     //state s = state(0,l);
-
     Dfa d{grammer};
 
     d.closure(x); //make public to call
