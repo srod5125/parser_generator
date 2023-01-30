@@ -189,6 +189,6 @@ void Dfa::closure(state s){
     std::cout << s;
 }
 //HERE
-unique_ptr<state> Dfa::goToState(line l){
+void Dfa::goToState(state){
 
 }

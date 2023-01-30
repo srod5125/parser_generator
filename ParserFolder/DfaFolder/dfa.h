@@ -49,7 +49,7 @@ struct state{
 
 class Dfa {
     private:
-        unique_ptr<state> goToState(line);//recurisve calls clojure, should know whther stat has been set
+        void goToState(state);//recurisve calls clojure, should know whther stat has been set
         void closure(state);//calls goto
         
         bool hasEpsilonProduction(string);
