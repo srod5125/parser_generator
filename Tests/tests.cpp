@@ -39,35 +39,7 @@ void printSet(const set<string>& x){
     std::cout << std::endl;
 }
 void testFirstDfa(){
-    unordered_map<string,symbol> grammer;
-    grammer["E"] = symbol("E",vector<string>{"T","E'"});
-    grammer["E'"] = symbol("E'",{{"+","T","E'"},{"EMPTY"}});
-    grammer["+"] = symbol({"+"});
-    grammer["EMPTY"] = symbol();
-    grammer["T"] = symbol("T",vector<string>{"F","T'"});
-    grammer["T'"] = symbol("T'",vector<vector<string>>{{"*","T'"},{"EMPTY"}});
-    grammer["*"] = symbol({"*"});
-    grammer["F"] = symbol("F",{{"(","E",")"},{"id"}});
-    grammer["("] = symbol({"("});
-    grammer[")"] = symbol({")"});
-    grammer["id"] = symbol({"id"});
 
-    unordered_map<string,symbol> grammer2;
-    grammer2["E"] = symbol("E",vector<string>{"T","X"});
-    grammer2["X"] = symbol("X",vector<vector<string>>{{"+","E"},{"EMPTY"}});
-    grammer2["EMPTY"] = symbol();
-    grammer2["T"] = symbol("T",{{"int","Y"},{"(","E",")"}});
-    grammer2["("] = symbol({"("});
-    grammer2[")"] = symbol({")"});
-    grammer["int"] = symbol({"int"});
-    grammer2["Y"] = symbol("Y",vector<vector<string>>{{"*","T"},{"EMPTY"}});
-    grammer2["*"] = symbol({"*"});
-
-    Dfa d{grammer2};
-    string tmp = "E";
-    //set<string> x = d.first(tmp); //make public to test
-    //std::cout << "First(" << tmp << "): ";
-    //printSet(x);
 }
 
 void testDfaClosure(){
@@ -79,8 +51,10 @@ void testDfaClosure(){
     grammer["b"] = symbol({"b"});
 
     line l = line(0,grammer["S'"],{"$"});
+    //set<line> x;
+    //x.insert(l);
     //line l = line(1,grammer["A"],{"a","b"});
-    state s = state(0,l);
+    //state s = state(0,l);
 
     Dfa d{grammer};
 
