@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <utility>
 
 #include "dfa.h"
 #include "../../CommonFolder/common.h"
@@ -11,6 +12,7 @@ using std::set;
 using std::string;
 using std::vector;
 using std::set;
+using std::pair;
 
 // ----------- line ---------
 line::line(int pos,symbol&& sym,unordered_set<string>&& lk){
@@ -35,11 +37,13 @@ line::line(int pos,symbol&& sym,unordered_set<string>& lk){
 }
 std::size_t line::hash::operator()( const line& l) const{
     std::size_t acc = std::hash<string>()(l.prod.name);
+    std::size_t seed = l.prod.production_rule[0].size();
+    acc = acc ^ l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     for(const auto& el: l.prod.production_rule[0]){
-        acc = acc ^ std::hash<string>()(el);
+        acc = acc ^ std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     for(const auto& el: l.lookahead){
-        acc = acc ^ std::hash<string>()(el);
+        acc = acc ^ std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     return acc;
 }
@@ -117,7 +121,9 @@ std::ostream& operator<< (std::ostream& out, const state& s){
 }
 
 // -------------- dfa ----------
+Dfa::Dfa():grammar{}{
 
+}
 Dfa::Dfa(const unordered_map<string,symbol>& g){
     grammar = g;
 
@@ -187,10 +193,9 @@ bool Dfa::hasEpsilonProduction(string nonterminal){
     }
     return hasEpsilonProduction;
 }
-
 state Dfa::closure(unordered_set<line,line::hash> lineSet){
     
-    //redo rank logic to handle more terminal cases, 
+    //check out early if is size of 1 and closed or accepting
     if(lineSet.size()==1){
         state s = state(lineSet);
         auto lineSetIter = lineSet.begin();
@@ -206,8 +211,15 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
     
 
     unordered_set<line,line::hash> aux;
-    unordered_map<string,int> alreadySeen;
-    auto lineSetIter = lineSet.begin();
+    struct pairHash {
+        size_t operator()(const pair<string,int> i) const {
+            return std::hash<string>()(i.first) ^ std::hash<int>()(i.second);
+        }
+    };
+    unordered_set<pair<string,int>,pairHash> alreadySeen;
+    auto lineSetIter{lineSet.begin()};
+    bool allTerminals{true};
+    bool encounteredAcceptCondition{false};
 
     while(!lineSet.empty()){
         lineSetIter = lineSet.begin();
@@ -218,7 +230,7 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
             
             if(!grammar[currentDotPosString].isTerminal){
                 //check if production has already been added at this dotposition
-                if(alreadySeen.find(currentDotPosString) == alreadySeen.end()){ //not present
+                if(alreadySeen.find( {currentDotPosString,lineSetIter->dotPosition} ) == alreadySeen.end()){ //not present
 
                     for(const auto& prods: grammar[currentDotPosString].production_rule){
                         //get lookahead
@@ -230,9 +242,15 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
                         //introduce new memebers
                         lineSet.insert(newLine);
                     }
-                    alreadySeen[currentDotPosString] = lineSetIter->dotPosition; // set to already seen
+                    alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                 }
+                allTerminals = false;
             }
+        }
+        else
+        {
+            //hits here when dot position is beyond production length
+            encounteredAcceptCondition = lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START";
         }
         //delete current memeber
         aux.insert(*lineSetIter);
@@ -240,6 +258,8 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
     }
 
     state sI = state(aux);
+    sI.rank = allTerminals ? status::closed : status::intermediate;
+    sI.rank = encounteredAcceptCondition ? status::accept : sI.rank;
     std::cout << sI;
     return sI;
 
