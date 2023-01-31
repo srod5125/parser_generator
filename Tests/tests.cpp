@@ -69,11 +69,29 @@ void testDfaClosure(){
     x.insert(l);
     //state s = state(0,l);
     Dfa d{grammer2};
-    d.closure(x); //make public to call
+    //d.closure(x); //make public to call
+}
+
+void testGoto1(){
+    unordered_map<string,symbol> grammer;
+    grammer["S'"] = symbol("S'",{"S"});
+    grammer["S"] = symbol("S",vector<string>{"A","A"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    grammer["a"] = symbol({"a"});
+    grammer["b"] = symbol({"b"});
+
+    Dfa d{grammer};
+
+    line l{0,grammer["S'"],{"$"}};
+    unordered_set<line,line::hash> x;
+    x.insert(l);
+    state s{d.closure(x)};
+    d.goToState(s);//init
 }
 
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
-    testDfaClosure();
+    //testDfaClosure();
+    testGoto1();
 }

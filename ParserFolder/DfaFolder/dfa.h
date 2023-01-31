@@ -34,6 +34,8 @@ struct line {
     {
         std::size_t operator()( const line& ) const;
     };
+
+    friend std::ostream& operator<< (std::ostream&, const line&);
 };
 enum class status : char{
     accept,
@@ -54,20 +56,31 @@ struct state{
     friend std::ostream& operator<< (std::ostream&, const state&);
 };
 
+struct initProdsHash {
+    std::size_t operator()(const unordered_set<line,line::hash>&) const;
+};
+struct initProdsEqual {
+    bool operator()(const unordered_set<line,line::hash>&,const unordered_set<line,line::hash>&) const;
+};
 class Dfa {
     private:
-        void goToState(state);//recurisve calls clojure, should know whther stat has been set
-        
         bool hasEpsilonProduction(string);
         unordered_set<string> first(const string&);
 
+        
         unordered_map<string,symbol> grammar;
         unique_ptr<state> startPtr;
+        
+
+        unordered_map< unordered_set<line,line::hash>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
+        int globalStateNum;
     public:
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
-        state closure(unordered_set<line,line::hash>);//calls goto
+
+        state closure(unordered_set<line,line::hash>);
+        void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 };
 
 #endif

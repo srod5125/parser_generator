@@ -14,6 +14,8 @@ using std::vector;
 using std::set;
 using std::pair;
 
+#define LOG(msg) std::cout << msg << std::endl;
+
 // ----------- line ---------
 line::line(int pos,symbol&& sym,unordered_set<string>&& lk){
     dotPosition = pos;
@@ -38,12 +40,12 @@ line::line(int pos,symbol&& sym,unordered_set<string>& lk){
 std::size_t line::hash::operator()( const line& l) const{
     std::size_t acc = std::hash<string>()(l.prod.name);
     std::size_t seed = l.prod.production_rule[0].size();
-    acc = acc ^ l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     for(const auto& el: l.prod.production_rule[0]){
-        acc = acc ^ std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     for(const auto& el: l.lookahead){
-        acc = acc ^ std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     return acc;
 }
@@ -62,14 +64,34 @@ bool operator==(const line& lhs, const line& rhs){
     if(!same) {return false;}
     return true;
 }
+std::ostream& operator<< (std::ostream& out, const line& l){
+    out << l.prod.name << " -> ";
+    for(int i=0;i<l.prod.production_rule[0].size();i+=1){
+        if(i==l.dotPosition){
+            out << "o";
+        }
+        out << l.prod.production_rule[0][i];
+    }
+    if(l.prod.production_rule[0].size()==l.dotPosition){
+        out << "o";
+    }
+    //print look ahead
+    out << " {";
+    for(const auto& i: l.lookahead){
+        out << i << " ";
+    }
+    out << "}" << std::endl;
+
+    return out;
+}
 // -------------- state ----------
-state::state() : stateNum{-1}, rank{status::intermediate}, productions{}, transitions{} { }
-state::state(int n, line l) : rank{status::intermediate}, transitions{} {
+state::state() : stateNum{0}, rank{status::intermediate}, productions{}, transitions{} { }
+state::state(int n, line l) : stateNum{0}, rank{status::intermediate}, transitions{} {
     stateNum = n;
     productions.insert(l);
 }
 state::state(const unordered_set<line,line::hash>& lineSet)
-: stateNum{-1}, rank{status::intermediate}, transitions{} {
+: stateNum{0}, rank{status::intermediate}, transitions{} {
     productions = lineSet;
 }
 std::ostream& operator<< (std::ostream& out, const state& s){
@@ -93,22 +115,7 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     //print rules with dots
     for(const auto& l: s.productions){
         //looping over symbols first production rule
-        out << l.prod.name << " -> ";
-        for(int i=0;i<l.prod.production_rule[0].size();i+=1){
-            if(i==l.dotPosition){
-                out << "o";
-            }
-            out << l.prod.production_rule[0][i];
-        }
-        if(l.prod.production_rule[0].size()==l.dotPosition){
-            out << "o";
-        }
-        //print look ahead
-        out << " {";
-        for(const auto& i: l.lookahead){
-            out << i << " ";
-        }
-        out << "}" << std::endl;
+        out << l;
     }
     //print transition connections //TODO: fix
     out << "CONNECTIONS:\t";
@@ -119,12 +126,27 @@ std::ostream& operator<< (std::ostream& out, const state& s){
 
     return out;
 }
+//-------------- helpers -------
+
+std::size_t initProdsHash::operator()(const unordered_set<line,line::hash>& lSet) const{
+    std::size_t acc;
+    std::size_t seed;
+    for(const auto& l: lSet){
+        seed = l.prod.production_rule[0].size();
+        acc ^= line::hash()(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return acc;
+}
+bool initProdsEqual::operator()(const unordered_set<line,line::hash>& lhs,const unordered_set<line,line::hash>& rhs) const{
+    return lhs == rhs;
+}
+
 
 // -------------- dfa ----------
-Dfa::Dfa():grammar{}{
+Dfa::Dfa():grammar{}, globalStateNum{0} {
 
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g){
+Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0} {
     grammar = g;
 
     line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
@@ -204,9 +226,10 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
             if(lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START"){
                 s.rank = status::accept;
             }
-            std::cout << s;
+            //std::cout << s;
             return s;
-        } 
+        }
+        
     }
     
 
@@ -260,14 +283,91 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
     state sI = state(aux);
     sI.rank = allTerminals ? status::closed : status::intermediate;
     sI.rank = encounteredAcceptCondition ? status::accept : sI.rank;
-    std::cout << sI;
+    //LOG("hit here")
+    //std::cout << sI;
     return sI;
 
 }
-//HERE
-void Dfa::goToState(state){
-    //map (string,set(lines))
-    //at dot position
+//goto to transitions for state
+void Dfa::goToState(state& s){
+    std::cin.get();
+    std::cout << s;
     //if state was already constructed set pointer to that
     //set transition to string -> state
+
+    unordered_map< string, unordered_set<line,line::hash> > produtionsAtDotPos;
+    //collect set of lines with equal dot position strings
+    for(const auto& l : s.productions){
+        if(l.dotPosition<l.prod.production_rule[0].size()){
+            produtionsAtDotPos[l.prod.production_rule[0][l.dotPosition]].insert(l);
+        } 
+    }
+    // std::cout << "lines in current goto" << std::endl;
+    // for(const auto& [prodName, setOfProds]: produtionsAtDotPos){
+    //     std::cout << prodName << " ";
+    //     for(const auto& l: setOfProds){
+    //         std::cout << l;
+    //     }
+    //     std::cout << std::endl;
+    // }
+//     LOG("lines in global holder")
+//     for(const auto& sets: initProdSMap){
+//         LOG(sets.second->stateNum)
+//         for(const auto& l: sets.first){
+//             std::cout << l;
+//         }
+//         LOG("-")
+//     }
+//    LOG(".....")
+    //std::cout << s;
+    //for all collections, if it was already produced
+    //connect
+    for(auto& [prodName, setOfProds]: produtionsAtDotPos){// does not contain
+        //increment total dots
+        unordered_set<line,line::hash> incrementedTemp;
+        auto setIter=setOfProds.begin();
+        while(!setOfProds.empty()){
+            setIter=setOfProds.begin();
+            line lNew = *setIter;
+            lNew.dotPosition+=1;
+            incrementedTemp.insert(lNew);
+            setOfProds.erase(setIter++);
+        }
+        setOfProds.swap(incrementedTemp);
+        // std::cout << "in loop" << std::endl;
+        // for(const auto& l: setOfProds){
+        //     std::cout << l;
+        // }
+        // std::cout << "out of loop" << std::endl;
+        bool previouslySeen = false;
+        for(auto initProdSMapIter = initProdSMap.begin(); initProdSMapIter!=initProdSMap.end(); ++initProdSMapIter){
+            if(initProdSMapIter->first==setOfProds){
+                previouslySeen = true;
+                break;
+            }
+        }
+        if(!previouslySeen)// does not contain //DID NOT WORK: initProdSMap.find(setOfProds) == initProdSMap.end()
+        { 
+            //create new state
+            s.transitions[prodName] = std::make_shared<state>(closure(setOfProds));
+            
+            //set new state num
+            s.transitions[prodName]->stateNum = globalStateNum++;
+            //hold globally
+            initProdSMap[setOfProds] = s.transitions[prodName];
+            // if(s.transitions[prodName]==nullptr){
+            //     std::cout << "is null ptr" << std::endl;
+            // }
+            //recusively call
+            LOG("> " << prodName)
+            goToState(*s.transitions[prodName]);
+        }
+        else //does contain
+        { 
+            //defer to that transition
+            s.transitions[prodName] = initProdSMap[setOfProds];
+            LOG("\t\t hit old conn")
+        }
+        //std::cout << *s.transitions[prodName]; //display children
+    }
 }
