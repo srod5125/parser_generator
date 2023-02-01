@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <utility>
+#include <stack>
 
 #include "dfa.h"
 #include "../../CommonFolder/common.h"
@@ -13,6 +14,7 @@ using std::string;
 using std::vector;
 using std::set;
 using std::pair;
+using std::stack;
 
 #define LOG(msg) std::cout << msg << std::endl;
 
@@ -162,45 +164,61 @@ Dfa::~Dfa(){
     //start = state(0,augmentedStart);
     startPtr = std::make_unique<state>(0,augmentedStart);
 }
+void printStack(stack<string> s){
+    while(!s.empty()){
+        std::cout << s.top() << " ";
+        s.pop();
+    }
+    LOG("")
+}
 
-unordered_set<string> Dfa::first(const string& sym){
+unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
+    LOG("-"<<sym)
     if(grammar[sym].isTerminal){ //handles null case
         unordered_set<string> x{sym};
         return x;
     }
     else {
-        unordered_set<string> x;
-        for(const auto& seq : grammar[sym].production_rule){
-            if(!seq.empty()){
-                if(grammar[seq[0]].isTerminal){
-                    x.insert(seq[0]);
-                }
-                else{
-
-                    if(!hasEpsilonProduction(seq[0])){
-                        unordered_set<string> tmp = first(seq[0]);
-                        x.insert(tmp.begin(),tmp.end());
+        if(alreadySeen.find(sym)==alreadySeen.end()){
+            alreadySeen.insert(sym);
+            
+            unordered_set<string> x;
+            for(const auto& seq : grammar[sym].production_rule){
+                if(!seq.empty()){
+                    if(grammar[seq[0]].isTerminal){
+                        x.insert(seq[0]);
                     }
-                    else {
-                        unordered_set<string> tmp = first(seq[0]);
-                        tmp.erase("EMPTY");
-                        x.insert(tmp.begin(),tmp.end());
+                    else{
 
-                        for(int i=1;i<seq.size();i+=1){
-                            if(grammar[seq[i]].isTerminal){
-                                x.insert(seq[i]);
-                                break;
-                            }
-                            else{
-                                unordered_set<string> tmp = first(seq[i]);
-                                x.insert(tmp.begin(),tmp.end());
+                        if(!hasEpsilonProduction(seq[0])){
+                            unordered_set<string> tmp = first(seq[0],alreadySeen);
+                            x.insert(tmp.begin(),tmp.end());
+                        }
+                        else {
+                            unordered_set<string> tmp = first(seq[0],alreadySeen);
+                            tmp.erase("EMPTY");
+                            x.insert(tmp.begin(),tmp.end());
+
+                            for(int i=1;i<seq.size();i+=1){
+                                //LOG(seq[i])
+                                if(grammar[seq[i]].isTerminal){
+                                    x.insert(seq[i]);
+                                    break;
+                                }
+                                else{
+                                    //LOG("hit "<<seq[i])
+                                    unordered_set<string> tmp = first(seq[i],alreadySeen);
+                                    x.insert(tmp.begin(),tmp.end());
+                                }
                             }
                         }
                     }
                 }
             }
+            return x;
         }
-        return x;
+
+        return {};
     }
 }
 
@@ -236,7 +254,8 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
     unordered_set<line,line::hash> aux;
     struct pairHash {
         size_t operator()(const pair<string,int> i) const {
-            return std::hash<string>()(i.first) ^ std::hash<int>()(i.second);
+            std::size_t seed = i.second;
+            return std::hash<string>()(i.first) ^ std::hash<int>()(i.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);;
         }
     };
     unordered_set<pair<string,int>,pairHash> alreadySeen;
@@ -258,8 +277,9 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
                     for(const auto& prods: grammar[currentDotPosString].production_rule){
                         //get lookahead
                         unordered_set<string> x = lineSetIter->lookahead;
+                        unordered_set<string> firstHelper{};
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
-                            x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1]);
+                            x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1],firstHelper);
                         }
                         line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
                         //introduce new memebers
@@ -290,7 +310,7 @@ state Dfa::closure(unordered_set<line,line::hash> lineSet){
 }
 //goto to transitions for state
 void Dfa::goToState(state& s){
-    std::cin.get();
+    //std::cin.get();
     std::cout << s;
     //if state was already constructed set pointer to that
     //set transition to string -> state
@@ -366,7 +386,7 @@ void Dfa::goToState(state& s){
         { 
             //defer to that transition
             s.transitions[prodName] = initProdSMap[setOfProds];
-            //LOG("\t\t hit old conn")
+            LOG("\t\t hit old conn")
         }
         //std::cout << *s.transitions[prodName]; //display children
         LOG("<")
