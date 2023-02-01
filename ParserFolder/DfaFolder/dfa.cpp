@@ -366,8 +366,9 @@ void Dfa::goToState(state& s){
         { 
             //defer to that transition
             s.transitions[prodName] = initProdSMap[setOfProds];
-            LOG("\t\t hit old conn")
+            //LOG("\t\t hit old conn")
         }
         //std::cout << *s.transitions[prodName]; //display children
+        LOG("<")
     }
 }

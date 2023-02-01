@@ -22,3 +22,5 @@ int main(){
     layer ; lexer : 0, parser : 1
     error message
 */
+
+//g++ -g $(find . -type f -iregex ".*\.cpp") -o interpreter
