@@ -55,6 +55,12 @@ struct state{
     state(int,line);
     state(const unordered_set<line,line::hash>&);
 
+    friend bool operator==(const state&, const state&);
+    struct hash
+    {
+        std::size_t operator()( const state& ) const;
+    };
+
     friend std::ostream& operator<< (std::ostream&, const state&);
 };
 
@@ -75,7 +81,6 @@ class Dfa {
         unordered_set<string> first(const string&,unordered_set<string>&);
         unordered_map<string, unordered_set<string> > firstCache;
         
-        unordered_map< unordered_set<line,line::hash>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
         
 
         int globalStateNum;
@@ -85,6 +90,7 @@ class Dfa {
         ~Dfa();
 
         //unordered_set<string> first(const string&);
+        unordered_map< state, shared_ptr<state>, state::hash> statePtrMap;
 
         shared_ptr<state> closure(unordered_set<line,line::hash>);
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set

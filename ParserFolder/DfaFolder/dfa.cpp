@@ -56,7 +56,7 @@ std::size_t line::hash::operator()( const line& l) const{
     }
     return acc;
 }
-bool operator==(const line& lhs, const line& rhs){
+bool operator==(const line & lhs, const line & rhs){
     bool same = lhs.prod.name == rhs.prod.name;
     if(!same) {return false;}
     same = lhs.prod.production_rule[0].size() == rhs.prod.production_rule[0].size();
@@ -69,6 +69,7 @@ bool operator==(const line& lhs, const line& rhs){
     if(!same) {return false;}
     same = lhs.lookahead == rhs.lookahead;
     if(!same) {return false;}
+
     return true;
 }
 std::ostream& operator<< (std::ostream& out, const line& l){
@@ -137,6 +138,20 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     out << std::endl << std::endl;
 
     return out;
+}
+
+std::size_t state::hash::operator()(const state & s) const
+{
+    std::size_t acc = std::hash<int>()(s.stateNum);
+    std::size_t seed = acc;
+    //acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    acc ^= 
+
+}
+
+bool operator==(const state &, const state &)
+{
+    return false;
 }
 //-------------- helpers -------
 
