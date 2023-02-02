@@ -89,12 +89,12 @@ void testFirstDfa(){
     grammer6["f"] = symbol({"f"});
     grammer6["EMPTY"] = symbol();
 
-    Dfa d{grammer5};
+    Dfa d{grammer6};
     unordered_set<string> helper{};
-    string t = "B";
-    //unordered_set<string> x = d.first(t,helper); //make public to test
+    string t = "D";
+    unordered_set<string> x = d.first(t,helper); //make public to test
     LOG(t)
-    //printSet(x);
+    printSet(x);
 }
 
 void testDfaClosure(){

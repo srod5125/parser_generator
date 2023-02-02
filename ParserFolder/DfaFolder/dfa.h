@@ -70,7 +70,7 @@ class Dfa {
         unordered_map<string,symbol> grammar;
         unique_ptr<state> startPtr;
         
-        unordered_set<string> first(const string&,unordered_set<string>&);
+        unordered_map<string, unordered_set<string> > firstCache;
         
 
         unordered_map< unordered_set<line,line::hash>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
@@ -82,6 +82,7 @@ class Dfa {
 
         //unordered_set<string> first(const string&);
 
+        unordered_set<string> first(const string&,unordered_set<string>&);
         state closure(unordered_set<line,line::hash>);
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 };

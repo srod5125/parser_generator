@@ -145,10 +145,10 @@ bool initProdsEqual::operator()(const unordered_set<line,line::hash>& lhs,const 
 
 
 // -------------- dfa ----------
-Dfa::Dfa():grammar{}, globalStateNum{0} {
+Dfa::Dfa():grammar{}, globalStateNum{0}, firstCache{} {
 
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0} {
+Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0}, firstCache{} {
     grammar = g;
 
     line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
@@ -159,7 +159,7 @@ Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0} {
     //closure(start);
 
 }
-Dfa::~Dfa(){
+Dfa::~Dfa() {
     line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
     //start = state(0,augmentedStart);
     startPtr = std::make_unique<state>(0,augmentedStart);
@@ -172,8 +172,11 @@ void printStack(stack<string> s){
     LOG("")
 }
 
-unordered_set<string> Dfa::first(const string & sym, unordered_set<string>& alreadySeen){
-    //LOG("-"<<sym)
+unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
+    LOG("-"<<sym)
+    if(firstCache.find(sym) != firstCache.end()){
+        return firstCache[sym];
+    }
     if(grammar[sym].isTerminal){ //handles null case
         unordered_set<string> x{sym};
         return x;
@@ -215,6 +218,7 @@ unordered_set<string> Dfa::first(const string & sym, unordered_set<string>& alre
                     }
                 }
             }
+            firstCache[sym] = x;
             return x;
         }
 
