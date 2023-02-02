@@ -90,7 +90,7 @@ class Dfa {
         ~Dfa();
 
         //unordered_set<string> first(const string&);
-        unordered_map< state, shared_ptr<state>, state::hash> statePtrMap;
+        unordered_map< int, shared_ptr<state>, state::hash> stateNumPtrMap;
 
         shared_ptr<state> closure(unordered_set<line,line::hash>);
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set

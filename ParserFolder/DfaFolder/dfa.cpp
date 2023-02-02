@@ -140,14 +140,20 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     return out;
 }
 
-std::size_t state::hash::operator()(const state & s) const
-{
-    std::size_t acc = std::hash<int>()(s.stateNum);
-    std::size_t seed = acc;
-    //acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    acc ^= 
-
-}
+// std::size_t state::hash::operator()(const state & s) const
+// {
+//     std::size_t acc = std::hash<int>()(s.stateNum);
+//     std::size_t seed = acc;
+//     //acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//     acc ^= std::hash<char>()(static_cast<char>(s.rank)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//     for(const auto& p: s.productions){
+//         acc ^= line::hash()(p) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//     }
+//     for(const auto& t: s.transitions){
+//         acc ^= std::hash<string>()(t.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//     }
+//     return acc;
+// }
 
 bool operator==(const state &, const state &)
 {
@@ -184,9 +190,9 @@ bool initProdsEqual::operator()(const unordered_set<line,line::hash>& lhs,const 
 
 
 // -------------- dfa ----------
-Dfa::Dfa():grammar{}, globalStateNum{0}, firstCache{}, initProdSMap{} {
+Dfa::Dfa():grammar{}, globalStateNum{0}, firstCache{}, stateNumPtrMap{} {
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0}, firstCache{}, initProdSMap{}  {
+Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0}, firstCache{}, stateNumPtrMap{}  {
     grammar = g;
 
     line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
@@ -449,12 +455,7 @@ void Dfa::goToState(state& s){
         // LOG(">")
         bool previouslySeen = false;
         //auto initProdSMapPtr = initProdSMap.begin();
-        for(auto initProdSMapIter = initProdSMap.begin(); initProdSMapIter!=initProdSMap.end(); ++initProdSMapIter){
-            if(initProdSMapIter->first==setOfProds){
-                previouslySeen = true;
-                break;
-            }
-        }
+        if(stateNumPtrMap.find())
         if(!previouslySeen)// does not contain //DID NOT WORK: initProdSMap.find(setOfProds) == initProdSMap.end()
         { 
             //create new state
