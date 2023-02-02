@@ -28,6 +28,7 @@ struct line {
     line(int,symbol&,unordered_set<string>&&);
     line(int,symbol&,unordered_set<string>&);
     line(int,symbol&&,unordered_set<string>&);
+    line(const line&,unordered_set<string>&);
 
     friend bool operator==(const line&, const line&);
     struct hash
@@ -41,6 +42,7 @@ enum class status : char{
     accept,
     closed,
     intermediate,
+    start
 };
 //list of lines, list of transitions
 struct state{
@@ -70,10 +72,12 @@ class Dfa {
         unordered_map<string,symbol> grammar;
         unique_ptr<state> startPtr;
         
+        unordered_set<string> first(const string&,unordered_set<string>&);
         unordered_map<string, unordered_set<string> > firstCache;
         
-
         unordered_map< unordered_set<line,line::hash>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
+        
+
         int globalStateNum;
     public:
         Dfa();
@@ -82,8 +86,7 @@ class Dfa {
 
         //unordered_set<string> first(const string&);
 
-        unordered_set<string> first(const string&,unordered_set<string>&);
-        state closure(unordered_set<line,line::hash>);
+        shared_ptr<state> closure(unordered_set<line,line::hash>);
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 };
 

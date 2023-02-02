@@ -5,6 +5,7 @@
 #include <regex>
 #include <unordered_set>
 #include <vector>
+#include <memory>
 
 #include "tests.h"
 
@@ -17,6 +18,7 @@ using std::unordered_map;
 using std::regex;
 using std::unordered_set;
 using std::vector;
+using std::shared_ptr;
 
 #define LOG(msg) std::cout << msg << std::endl;
 
@@ -92,82 +94,97 @@ void testFirstDfa(){
     Dfa d{grammer6};
     unordered_set<string> helper{};
     string t = "D";
-    unordered_set<string> x = d.first(t,helper); //make public to test
+    //unordered_set<string> x = d.first(t,helper); //make public to test
     LOG(t)
-    printSet(x);
+    //printSet(x);
 }
 
 void testDfaClosure(){
     unordered_map<string,symbol> grammer;
-    grammer["S'"] = symbol("S'",{"S"});
+    grammer["S'"] = symbol("S'",vector<string>{"S"});
     grammer["S"] = symbol("S",vector<string>{"A","A"});
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
     
-    unordered_map<string,symbol> grammer2;
-    grammer2["S'"] = symbol("S'",{"E"});
-    grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
-    grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
-    grammer2["G"] = symbol("G",{"F"});
-    grammer2["*"] = symbol({"*"});
-    grammer2["+"] = symbol({"+"});
-    grammer2["("] = symbol({"("});
-    grammer2[")"] = symbol({")"});
-    grammer2["id"] = symbol({"id"});
+    // unordered_map<string,symbol> grammer2;
+    // grammer2["S'"] = symbol("S'",{"E"});
+    // grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    // grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
+    // grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
+    // grammer2["G"] = symbol("G",{"F"});
+    // grammer2["*"] = symbol({"*"});
+    // grammer2["+"] = symbol({"+"});
+    // grammer2["("] = symbol({"("});
+    // grammer2[")"] = symbol({")"});
+    // grammer2["id"] = symbol({"id"});
+    
+    // unordered_map<string,symbol> grammer3;
+    // grammer3["S'"] = symbol("S'",{"P"});
+    // grammer3["P"] = symbol("P",{"E"});
+    // grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    // grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
+    // grammer3["+"] = symbol({"+"});
+    // grammer3["id"] = symbol({"id"});
+    // grammer3["("] = symbol({"("});
+    // grammer3[")"] = symbol({")"});
 
-    //line l = line(1,grammer["A"],{"a","b"});
-    line l = line(0,grammer2["G"],{"$"});
+    //line l{1,grammer["A"],{"a","b"}};
+    line l{0,grammer["S'"],{"$"}};
     unordered_set<line,line::hash> x;
     x.insert(l);
     //state s = state(0,l);
-    Dfa d{grammer2};
-    //d.closure(x); //make public to call
+    Dfa d{grammer};
+    shared_ptr<state> s{d.closure(x)}; //make public to call
+    //LOG(*s)
 }
 
 void testGoto1(){
     unordered_map<string,symbol> grammer;
-    grammer["S'"] = symbol("S'",{"S"});
+    grammer["S'"] = symbol("S'",vector<string>{"S"});
     grammer["S"] = symbol("S",vector<string>{"A","A"});
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
 
-    unordered_map<string,symbol> grammer2;
-    grammer2["S'"] = symbol("S'",{"E"});
-    grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
-    grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
-    grammer2["G"] = symbol("G",{"F"});
-    grammer2["*"] = symbol({"*"});
-    grammer2["+"] = symbol({"+"});
-    grammer2["("] = symbol({"("});
-    grammer2[")"] = symbol({")"});
-    grammer2["id"] = symbol({"id"});
+    // unordered_map<string,symbol> grammer2;
+    // grammer2["S'"] = symbol("S'",{"E"});
+    // grammer2["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    // grammer2["T"] = symbol("T",vector<vector<string>>{{"T","*","F"},{"F"}});
+    // grammer2["F"] = symbol("F",vector<vector<string>>{{"(","E",")"},{"id"}});
+    // grammer2["G"] = symbol("G",{"F"});
+    // grammer2["*"] = symbol({"*"});
+    // grammer2["+"] = symbol({"+"});
+    // grammer2["("] = symbol({"("});
+    // grammer2[")"] = symbol({")"});
+    // grammer2["id"] = symbol({"id"});
 
-    unordered_map<string,symbol> grammer3;
-    grammer3["S'"] = symbol("S'",{"P"});
-    grammer3["P"] = symbol("P",{"E"});
-    grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
-    grammer3["+"] = symbol({"+"});
-    grammer3["id"] = symbol({"id"});
-    grammer3["("] = symbol({"("});
-    grammer3[")"] = symbol({")"});
+    // unordered_map<string,symbol> grammer3;
+    // grammer3["S'"] = symbol("S'",{"P"});
+    // grammer3["P"] = symbol("P",{"E"});
+    // grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    // grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
+    // grammer3["+"] = symbol({"+"});
+    // grammer3["id"] = symbol({"id"});
+    // grammer3["("] = symbol({"("});
+    // grammer3[")"] = symbol({")"});
 
-    Dfa d{grammer3};
 
-    line l{0,grammer3["S'"],{"$"}};
+    line l{0,grammer["S'"],{"$"}};
     unordered_set<line,line::hash> x;
     x.insert(l);
-    state s{d.closure(x)};
-    d.goToState(s);//init
+
+    Dfa d{grammer};
+    shared_ptr<state> s{d.closure(x)};
+    //LOG(*s)
+    s->rank = status::start;
+    s->stateNum = -1;
+    d.goToState(*s);//init
 }
 
 void runAllTest(){
-    testFirstDfa();
+    //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
-    //testGoto1();
+    testGoto1();
 }
