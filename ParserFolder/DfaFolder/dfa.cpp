@@ -172,8 +172,8 @@ void printStack(stack<string> s){
     LOG("")
 }
 
-unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
-    LOG("-"<<sym)
+unordered_set<string> Dfa::first(const string & sym, unordered_set<string>& alreadySeen){
+    //LOG("-"<<sym)
     if(grammar[sym].isTerminal){ //handles null case
         unordered_set<string> x{sym};
         return x;
