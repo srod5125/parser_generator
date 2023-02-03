@@ -141,15 +141,18 @@ std::ostream& operator<< (std::ostream& out, const state& s){
 //-------------- helpers -------
 
 std::size_t initProdsHash::operator()(const unordered_set<line,line::hash>& lSet) const{
+    //LOG("In hash")
     std::size_t acc;
     std::size_t seed;
     for(const auto& l: lSet){
+        //std::cout << l << "\t here" << std::endl;
         seed = lSet.size();
         acc ^= line::hash()(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
+    //LOG(acc)
     return acc;
     //std::size_t acc;
-    // std::size_t seed;
+    // std::size_t seed; 
     // for(const auto& l: lSet){
     //     seed = l.prod.production_rule[0].size();
     //     acc ^= std::hash<string>()(l.prod.name) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -450,13 +453,16 @@ void Dfa::goToState(state& s){
             //initProdSMap[setOfProds] = std::make_shared<state>(s.transitions[prodName]);
             //unordered_set<line, line::hash> tmp = setOfProds;
             //shared_ptr<state> tmp = s.transitions[prodName];
-            
+            //LOG("in goto")
+            // for(const auto& l:setOfProds){
+            //     std::cout<<l;
+            // }
             initProdSMap[setOfProds] = s.transitions[prodName];
             //initProdSMap[{}] = s.transitions[prodName];
             //if(initProdSMap[{}].get()==nullptr) {LOG("ass")}
             //if(tmp.get()==nullptr) {LOG("ass")}
             //else {LOG("but")}
-            //LOG(initProdSMap[{}]->stateNum)
+            //LOG(initProdSMap[setOfProds]->stateNum)
             // if(s.transitions[prodName]==nullptr){
             //     std::cout << "is null ptr" << std::endl;
             // }
@@ -481,14 +487,14 @@ void Dfa::goToState(state& s){
     //     LOG(toName)
     //     LOG(shrdPtr->stateNum)
     // }
-    LOG("lines in global holder")
-    for(const auto& sets: initProdSMap){
-        if(sets.second.get()!=nullptr) {LOG(sets.second->stateNum)}
-        for(const auto& l: sets.first){
-            std::cout << l;
-        }
-        LOG("-")
-    }
-   LOG(".....")
+//     LOG("lines in global holder")
+//     for(const auto& sets: initProdSMap){
+//         if(sets.second.get()!=nullptr) {LOG(sets.second->stateNum)}
+//         for(const auto& l: sets.first){
+//             std::cout << l;
+//         }
+//         LOG("-")
+//     }
+//    LOG(".....")
     LOG(s);
 }
