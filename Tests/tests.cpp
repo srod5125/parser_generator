@@ -20,6 +20,7 @@ using std::unordered_set;
 using std::vector;
 using std::shared_ptr;
 
+
 #define LOG(msg) std::cout << msg << std::endl;
 
 //isolated test for lexer to see if it splits string correctly
@@ -131,7 +132,7 @@ void testDfaClosure(){
 
     //line l{1,grammer["A"],{"a","b"}};
     line l{0,grammer["S'"],{"$"}};
-    unordered_set<line,line::hash> x;
+    unordered_set<line,line::hash,line::equal> x;
     x.insert(l);
     //state s = state(0,l);
     Dfa d{grammer};
@@ -171,7 +172,7 @@ void testGoto1(){
 
 
     line l{0,grammer["S'"],{"$"}};
-    unordered_set<line,line::hash> x;
+    unordered_set<line,line::hash,line::equal> x;
     x.insert(l);
 
     Dfa d{grammer};
