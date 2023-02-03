@@ -47,16 +47,17 @@ line::line(const line& l,unordered_set<string>& lk){
     lookahead = lk;
 }
 std::size_t line::hash::operator()( const line& l) const{
-    std::size_t acc = std::hash<string>()(l.prod.name);
     std::size_t seed = l.prod.production_rule[0].size();
-    acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    std::hash<string> stringHasher;
+    seed ^= stringHasher(l.prod.name);
+    seed ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     for(const auto& el: l.prod.production_rule[0]){
-        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     for(const auto& el: l.lookahead){
-        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
-    return acc;
+    return seed;
 }
 bool line::equal::operator()(const line& lhs,const line& rhs) const{
     bool same = lhs.prod.name == rhs.prod.name;
@@ -159,15 +160,14 @@ std::ostream& operator<< (std::ostream& out, const state& s){
 
 std::size_t initProdsHash::operator()(const lineSet& lSet) const{
     //LOG("In hash")
-    std::size_t acc;
-    std::size_t seed;
+    std::size_t seed = lSet.size();
+    line::hash lineHahser;
     for(const auto& l: lSet){
         //std::cout << l << "\t here" << std::endl;
-        seed = lSet.size();
-        acc ^= line::hash()(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= lineHahser(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     //LOG(acc)
-    return acc;
+    return seed;
     //std::size_t acc;
     // std::size_t seed; 
     // for(const auto& l: lSet){
@@ -189,17 +189,25 @@ bool initProdsEqual::operator()(const lineSet& lhs,const lineSet& rhs) const{
 
 
 // -------------- dfa ----------
-Dfa::Dfa():grammar{}, globalStateNum{0}, firstCache{}, initProdSMap{} {
+Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, initProdSMap{} {
+    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr.get());
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0}, firstCache{}, initProdSMap{}  {
+Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
     grammar = g;
 
-    line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
-    //start = state(0,augmentedStart);
-    startPtr = std::make_unique<state>(0,augmentedStart);
-    //startPtr = std::make_unique<state>(start);
-
-    //closure(start);
+    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"});
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr.get());
 
 }
 Dfa::~Dfa() {
@@ -207,13 +215,14 @@ Dfa::~Dfa() {
     //start = state(0,augmentedStart);
     startPtr = std::make_unique<state>(0,augmentedStart);
 }
-void printStack(stack<string> s){
-    while(!s.empty()){
-        std::cout << s.top() << " ";
-        s.pop();
-    }
-    LOG("")
-}
+
+// void printStack(stack<string> s){
+//     while(!s.empty()){
+//         std::cout << s.top() << " ";
+//         s.pop();
+//     }
+//     LOG("")
+// }
 
 unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
     //LOG("-"<<sym)
@@ -308,14 +317,15 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
 
     struct lineNoSetHash {
         size_t operator()(const line& l) const {
-            std::size_t acc = std::hash<string>()(l.prod.name);
             std::size_t seed = l.prod.production_rule[0].size();
-            acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            std::hash<string> stringHasher;
+            seed ^= stringHasher(l.prod.name);
+            seed ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             for(const auto& el: l.prod.production_rule[0]){
-                acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
             //note we do not hash the set
-            return acc;
+            return seed;
         }
     };
     struct lineNoSetEqual {

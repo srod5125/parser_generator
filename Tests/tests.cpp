@@ -136,7 +136,7 @@ void testDfaClosure(){
     x.insert(l);
     //state s = state(0,l);
     Dfa d{grammer};
-    shared_ptr<state> s{d.closure(x)}; //make public to call
+    //shared_ptr<state> s{d.closure(x)}; //make public to call
     //LOG(*s)
 }
 
@@ -160,32 +160,32 @@ void testGoto1(){
     // grammer2[")"] = symbol({")"});
     // grammer2["id"] = symbol({"id"});
 
-    // unordered_map<string,symbol> grammer3;
-    // grammer3["S'"] = symbol("S'",{"P"});
-    // grammer3["P"] = symbol("P",{"E"});
-    // grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    // grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
-    // grammer3["+"] = symbol({"+"});
-    // grammer3["id"] = symbol({"id"});
-    // grammer3["("] = symbol({"("});
-    // grammer3[")"] = symbol({")"});
+    unordered_map<string,symbol> grammer3;
+    //grammer3["S'"] = symbol("S'",{"P"});
+    grammer3["S"] = symbol("S",{"E"});
+    grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
+    grammer3["+"] = symbol({"+"});
+    grammer3["id"] = symbol({"id"});
+    grammer3["("] = symbol({"("});
+    grammer3[")"] = symbol({")"});
 
 
-    line l{0,grammer["S'"],{"$"}};
-    unordered_set<line,line::hash,line::equal> x;
-    x.insert(l);
+    //line l{0,grammer3["S'"],{"$"}};
+    //unordered_set<line,line::hash,line::equal> x;
+    //x.insert(l);
 
-    Dfa d{grammer};
-    shared_ptr<state> s{d.closure(x)};
+    Dfa d{grammer3};
+    //shared_ptr<state> s{d.closure(x)};
     //LOG(*s)
-    s->rank = status::start;
-    s->stateNum = -1;
-    d.goToState(*s);//init
+    //s->rank = status::start;
+    //s->stateNum = -1;
+    //d.goToState(*s);//init
 }
 
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
-    testGoto1();
+    //testGoto1();
 }
