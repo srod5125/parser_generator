@@ -16,6 +16,8 @@ using std::set;
 using std::pair;
 using std::stack;
 
+using lineSet = unordered_set<line,line::hash,line::equal>;
+
 #define LOG(msg) std::cout << msg << std::endl;
 
 // ----------- line ---------
@@ -45,16 +47,32 @@ line::line(const line& l,unordered_set<string>& lk){
     lookahead = lk;
 }
 std::size_t line::hash::operator()( const line& l) const{
-    std::size_t acc = std::hash<string>()(l.prod.name);
     std::size_t seed = l.prod.production_rule[0].size();
-    acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    std::hash<string> stringHasher;
+    seed ^= stringHasher(l.prod.name);
+    seed ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     for(const auto& el: l.prod.production_rule[0]){
-        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     for(const auto& el: l.lookahead){
-        acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
-    return acc;
+    return seed;
+}
+bool line::equal::operator()(const line& lhs,const line& rhs) const{
+    bool same = lhs.prod.name == rhs.prod.name;
+    if(!same) {return false;}
+    same = lhs.prod.production_rule[0].size() == rhs.prod.production_rule[0].size();
+    if(!same) {return false;}
+    for(int i=0;i<lhs.prod.production_rule[0].size() && i<rhs.prod.production_rule[0].size(); i+=1){
+        same = lhs.prod.production_rule[0][i] == rhs.prod.production_rule[0][i];
+        if(!same) {return false;}
+    }
+    same = lhs.lookahead.size() == rhs.lookahead.size();
+    if(!same) {return false;}
+    same = lhs.lookahead == rhs.lookahead;
+    if(!same) {return false;}
+    return true;
 }
 bool operator==(const line& lhs, const line& rhs){
     bool same = lhs.prod.name == rhs.prod.name;
@@ -97,9 +115,9 @@ state::state(int n, line l) : stateNum{0}, rank{status::intermediate}, transitio
     stateNum = n;
     productions.insert(l);
 }
-state::state(const unordered_set<line,line::hash>& lineSet)
+state::state(const lineSet& lSet)
 : stateNum{0}, rank{status::intermediate}, transitions{} {
-    productions = lineSet;
+    productions.insert(lSet.begin(),lSet.end());
 }
 std::ostream& operator<< (std::ostream& out, const state& s){
     //num status
@@ -140,16 +158,18 @@ std::ostream& operator<< (std::ostream& out, const state& s){
 }
 //-------------- helpers -------
 
-std::size_t initProdsHash::operator()(const unordered_set<line,line::hash>& lSet) const{
-    std::size_t acc;
-    std::size_t seed;
+std::size_t initProdsHash::operator()(const lineSet& lSet) const{
+    //LOG("In hash")
+    std::size_t seed = lSet.size();
+    line::hash lineHahser;
     for(const auto& l: lSet){
-        seed = lSet.size();
-        acc ^= line::hash()(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        //std::cout << l << "\t here" << std::endl;
+        seed ^= lineHahser(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
-    return acc;
+    //LOG(acc)
+    return seed;
     //std::size_t acc;
-    // std::size_t seed;
+    // std::size_t seed; 
     // for(const auto& l: lSet){
     //     seed = l.prod.production_rule[0].size();
     //     acc ^= std::hash<string>()(l.prod.name) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -163,23 +183,31 @@ std::size_t initProdsHash::operator()(const unordered_set<line,line::hash>& lSet
     // }
     // return acc;
 }
-bool initProdsEqual::operator()(const unordered_set<line,line::hash>& lhs,const unordered_set<line,line::hash>& rhs) const{
+bool initProdsEqual::operator()(const lineSet& lhs,const lineSet& rhs) const{
     return lhs == rhs;
 }
 
 
 // -------------- dfa ----------
-Dfa::Dfa():grammar{}, globalStateNum{0}, firstCache{}, initProdSMap{} {
+Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, initProdSMap{} {
+    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr.get());
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{0}, firstCache{}, initProdSMap{}  {
+Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
     grammar = g;
 
-    line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
-    //start = state(0,augmentedStart);
-    startPtr = std::make_unique<state>(0,augmentedStart);
-    //startPtr = std::make_unique<state>(start);
-
-    //closure(start);
+    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"});
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr.get());
 
 }
 Dfa::~Dfa() {
@@ -187,13 +215,14 @@ Dfa::~Dfa() {
     //start = state(0,augmentedStart);
     startPtr = std::make_unique<state>(0,augmentedStart);
 }
-void printStack(stack<string> s){
-    while(!s.empty()){
-        std::cout << s.top() << " ";
-        s.pop();
-    }
-    LOG("")
-}
+
+// void printStack(stack<string> s){
+//     while(!s.empty()){
+//         std::cout << s.top() << " ";
+//         s.pop();
+//     }
+//     LOG("")
+// }
 
 unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
     //LOG("-"<<sym)
@@ -267,12 +296,12 @@ static void printSet(const unordered_set<string>& x){
     }
     std::cout << " }" << std::endl;
 }
-shared_ptr<state> Dfa::closure(unordered_set<line,line::hash> lineSet){
+shared_ptr<state> Dfa::closure(lineSet lSet){
     
     //check out early if is size of 1 and closed or accepting
-    if(lineSet.size()==1){
-        shared_ptr<state> s = std::make_shared<state>(lineSet);
-        auto lineSetIter = lineSet.begin();
+    if(lSet.size()==1){
+        shared_ptr<state> s = std::make_shared<state>(lSet);
+        auto lineSetIter = lSet.begin();
         if(lineSetIter->dotPosition >= lineSetIter->prod.production_rule[0].size()){ // s-> aAb o
             s->rank = status::closed;
             if(lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START"){
@@ -288,14 +317,15 @@ shared_ptr<state> Dfa::closure(unordered_set<line,line::hash> lineSet){
 
     struct lineNoSetHash {
         size_t operator()(const line& l) const {
-            std::size_t acc = std::hash<string>()(l.prod.name);
             std::size_t seed = l.prod.production_rule[0].size();
-            acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            std::hash<string> stringHasher;
+            seed ^= stringHasher(l.prod.name);
+            seed ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             for(const auto& el: l.prod.production_rule[0]){
-                acc ^= std::hash<string>()(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
             //note we do not hash the set
-            return acc;
+            return seed;
         }
     };
     struct lineNoSetEqual {
@@ -314,12 +344,12 @@ shared_ptr<state> Dfa::closure(unordered_set<line,line::hash> lineSet){
     unordered_map<line,unordered_set<string>,lineNoSetHash,lineNoSetEqual> alreadySeen;//a line map
     //map between string+vector : set
 
-    auto lineSetIter{lineSet.begin()};
+    auto lineSetIter{lSet.begin()};
     bool allClosed{true};
     bool encounteredAcceptCondition{false};
 
-    while(!lineSet.empty()){
-        lineSetIter = lineSet.begin();
+    while(!lSet.empty()){
+        lineSetIter = lSet.begin();
         //LOG(*lineSetIter);
 
         //if not closed
@@ -344,7 +374,7 @@ shared_ptr<state> Dfa::closure(unordered_set<line,line::hash> lineSet){
                         }
                         line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
                         //introduce new memebers
-                        lineSet.insert(newLine);
+                        lSet.insert(newLine);
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                 //}
@@ -362,11 +392,11 @@ shared_ptr<state> Dfa::closure(unordered_set<line,line::hash> lineSet){
         //printSet(alreadySeen[*lineSetIter]);
         //LOG("--")
         //delete current memeber
-        lineSet.erase(lineSetIter);
+        lSet.erase(lineSetIter);
 
     }
 
-    unordered_set<line,line::hash> aux;
+    lineSet aux{};
     //pump into new states
     for(auto& [lineNoSet, firstSet]: alreadySeen){
         line l = line(lineNoSet,firstSet);
@@ -388,7 +418,7 @@ void Dfa::goToState(state& s){
     //if state was already constructed set pointer to that
     //set transition to string -> state
 
-    unordered_map< string, unordered_set<line,line::hash> > produtionsAtDotPos;
+    unordered_map< string, lineSet > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){
         if(l.dotPosition<l.prod.production_rule[0].size()){
@@ -417,7 +447,7 @@ void Dfa::goToState(state& s){
     //connect
     for(auto& [prodName, setOfProds]: produtionsAtDotPos){// does not contain
         //increment total dots
-        unordered_set<line,line::hash> incrementedTemp;
+        lineSet incrementedTemp;
         auto setIter=setOfProds.begin();
         while(!setOfProds.empty()){
             setIter=setOfProds.begin();
@@ -450,13 +480,16 @@ void Dfa::goToState(state& s){
             //initProdSMap[setOfProds] = std::make_shared<state>(s.transitions[prodName]);
             //unordered_set<line, line::hash> tmp = setOfProds;
             //shared_ptr<state> tmp = s.transitions[prodName];
-            
+            //LOG("in goto")
+            // for(const auto& l:setOfProds){
+            //     std::cout<<l;
+            // }
             initProdSMap[setOfProds] = s.transitions[prodName];
             //initProdSMap[{}] = s.transitions[prodName];
             //if(initProdSMap[{}].get()==nullptr) {LOG("ass")}
             //if(tmp.get()==nullptr) {LOG("ass")}
             //else {LOG("but")}
-            //LOG(initProdSMap[{}]->stateNum)
+            //LOG(initProdSMap[setOfProds]->stateNum)
             // if(s.transitions[prodName]==nullptr){
             //     std::cout << "is null ptr" << std::endl;
             // }
@@ -481,14 +514,14 @@ void Dfa::goToState(state& s){
     //     LOG(toName)
     //     LOG(shrdPtr->stateNum)
     // }
-    LOG("lines in global holder")
-    for(const auto& sets: initProdSMap){
-        if(sets.second.get()!=nullptr) {LOG(sets.second->stateNum)}
-        for(const auto& l: sets.first){
-            std::cout << l;
-        }
-        LOG("-")
-    }
-   LOG(".....")
+//     LOG("lines in global holder")
+//     for(const auto& sets: initProdSMap){
+//         if(sets.second.get()!=nullptr) {LOG(sets.second->stateNum)}
+//         for(const auto& l: sets.first){
+//             std::cout << l;
+//         }
+//         LOG("-")
+//     }
+//    LOG(".....")
     LOG(s);
 }

@@ -35,6 +35,10 @@ struct line {
     {
         std::size_t operator()( const line& ) const;
     };
+    struct equal
+    {
+        bool operator()(const line&,const line&) const;
+    };
 
     friend std::ostream& operator<< (std::ostream&, const line&);
 };
@@ -46,48 +50,48 @@ enum class status : char{
 };
 //list of lines, list of transitions
 struct state{
-    unordered_set<line,line::hash> productions;
+    unordered_set<line,line::hash,line::equal> productions;
     unordered_map<string, shared_ptr<state> > transitions; //one way pointer to new state
     int stateNum;
     status rank;
 
     state();
     state(int,line);
-    state(const unordered_set<line,line::hash>&);
+    state(const unordered_set<line,line::hash,line::equal>&);
 
     friend std::ostream& operator<< (std::ostream&, const state&);
 };
 
 struct initProdsHash {
-    std::size_t operator()(const unordered_set<line,line::hash>&) const;
+    std::size_t operator()(const unordered_set<line,line::hash,line::equal>&) const;
 };
 struct initProdsEqual {
-    bool operator()(const unordered_set<line,line::hash>&,const unordered_set<line,line::hash>&) const;
+    bool operator()(const unordered_set<line,line::hash,line::equal>&,const unordered_set<line,line::hash,line::equal>&) const;
 };
 class Dfa {
     private:
         bool hasEpsilonProduction(string);
-
         
-        unordered_map<string,symbol> grammar;
-        unique_ptr<state> startPtr;
         
         unordered_set<string> first(const string&,unordered_set<string>&);
         unordered_map<string, unordered_set<string> > firstCache;
         
-        unordered_map< unordered_set<line,line::hash>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
+        unordered_map< unordered_set<line,line::hash,line::equal>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
         
+        shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
+        void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 
-        int globalStateNum;
     public:
+        shared_ptr<state> startPtr;
+        unordered_map<string,symbol> grammar;
+        int globalStateNum;
+
         Dfa();
         Dfa(const unordered_map<string,symbol>&);
         ~Dfa();
 
         //unordered_set<string> first(const string&);
 
-        shared_ptr<state> closure(unordered_set<line,line::hash>);
-        void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 };
 
 #endif
