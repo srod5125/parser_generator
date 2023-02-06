@@ -166,5 +166,12 @@ std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
         }
         out << std::endl;
     }
+    return out;
+}
 
+void ParserTable::fillInTable(const Dfa& d){
+    //perform dfs,
+    //as a state is reached add it to map
+    //key:state,value:set(state numbers)
+    //fill in table transition steps based on grammer
 }
