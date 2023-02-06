@@ -74,18 +74,18 @@ bool line::equal::operator()(const line& lhs,const line& rhs) const{
     if(!same) {return false;}
     return true;
 }
-bool operator==(const line& lhs, const line& rhs){
-    bool same = lhs.prod.name == rhs.prod.name;
+bool line::operator==(const line& rhs) const{
+    bool same = this->prod.name == rhs.prod.name;
     if(!same) {return false;}
-    same = lhs.prod.production_rule[0].size() == rhs.prod.production_rule[0].size();
+    same = this->prod.production_rule[0].size() == rhs.prod.production_rule[0].size();
     if(!same) {return false;}
-    for(int i=0;i<lhs.prod.production_rule[0].size() && i<rhs.prod.production_rule[0].size(); i+=1){
-        same = lhs.prod.production_rule[0][i] == rhs.prod.production_rule[0][i];
+    for(int i=0;i<this->prod.production_rule[0].size() && i<rhs.prod.production_rule[0].size(); i+=1){
+        same = this->prod.production_rule[0][i] == rhs.prod.production_rule[0][i];
         if(!same) {return false;}
     }
-    same = lhs.lookahead.size() == rhs.lookahead.size();
+    same = this->lookahead.size() == rhs.lookahead.size();
     if(!same) {return false;}
-    same = lhs.lookahead == rhs.lookahead;
+    same = this->lookahead == rhs.lookahead;
     if(!same) {return false;}
     return true;
 }

@@ -39,6 +39,19 @@ struct symbol{
     friend std::ostream& operator<< (std::ostream&, const symbol&);
 };
 
+//interface for hashable structures
+struct index {
+    virtual bool operator==(const index&); //TODO: implement as abstract class
+    struct hash
+    {
+        virtual std::size_t operator()( const index& ) const = 0;
+    };
+    struct equal
+    {
+        virtual bool operator()(const index&,const index&) const = 0;
+    };
+};
+
 #endif
 
 

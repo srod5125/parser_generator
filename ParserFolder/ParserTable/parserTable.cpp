@@ -4,12 +4,14 @@
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <iomanip> 
 
 using std::string;
 using std::vector;
 using std::unordered_set;
 using std::unordered_map;
 using std::pair;
+using std::setw;
 
 
 #include "parserTable.h"
@@ -104,10 +106,65 @@ void ParserTable::init(const Dfa& d){
 }
 
 std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
-    int numOfStates{pT.actionTable.size()};
+    int rowSize{pT.actionTable.size()};
+    int colSize{pT.actionColumnMap.size()+pT.gotoColumnMap.size()};
 
-    for(int i=0;i<numOfStates;i+=1){
-        //print maps
-        //here
+    const int spc = 4;
+    // maps iter to colum map
+    unordered_map<int,string> reverseActionCol;
+    int tmpCol{0};
+    for(const auto& a: pT.actionColumnMap){
+        reverseActionCol[tmpCol] = a.first;
+        tmpCol+=1;
     }
+    unordered_map<int,string> reverseGotoCol;
+    tmpCol = 0;
+    for(const auto& g: pT.gotoColumnMap){
+        reverseGotoCol[tmpCol] = g.first;
+        tmpCol+=1;
+    }
+    auto getStepString = [&out,&spc](step s,int state){
+        switch (s)
+        {
+            case step::accept: 
+                out << "A" << state;
+                break;
+            case step::none:
+                out << " " << -1;
+                break;
+            case step::reduce:
+                out << "R" << state;
+                break;
+            case step::shift:
+                out << "S" << state;
+                break;
+            default:
+                out << "E" << -1;
+                break;
+        }
+        out << setw(spc);
+    };
+    //print begining offset
+    out << setw(spc);
+    //print line of action and goto in order
+    for(int i=0;i<pT.actionColumnMap.size();i+=1){
+        out << reverseActionCol[i] << setw(spc);
+    }
+    for(int i=0;i<pT.gotoColumnMap.size();i+=1){
+        out << reverseGotoCol[i] << setw(spc);
+    }
+    out << std::endl;
+    for(int row=0;row<pT.actionTable[0].size();row+=1){
+        out << row << setw(spc);
+        for(int i=0, j=colSize*-1; j<colSize; ++i,++j){
+            if(i<pT.actionColumnMap.size()){
+                getStepString(pT.actionTable[row][i].first,pT.actionTable[row][i].second);
+            }
+            if(j>=0){
+                getStepString(pT.gotoTable[row][j].first,pT.gotoTable[row][j].second);
+            }
+        }
+        out << std::endl;
+    }
+
 }

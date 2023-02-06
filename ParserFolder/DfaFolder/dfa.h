@@ -19,7 +19,7 @@ using std::string;
 
 
 //dot position, production list, lookahead set
-struct line {
+struct line : public index {
     int dotPosition;
     symbol prod; // s-> ABB
     unordered_set<string> lookahead;
@@ -30,7 +30,7 @@ struct line {
     line(int,symbol&&,unordered_set<string>&);
     line(const line&,unordered_set<string>&);
 
-    friend bool operator==(const line&, const line&);
+    bool operator==(const line&) const;
     struct hash
     {
         std::size_t operator()( const line& ) const;

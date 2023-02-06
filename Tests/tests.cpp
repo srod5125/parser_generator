@@ -187,5 +187,5 @@ void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
-    //testGoto1();
+    testGoto1();
 }
