@@ -81,7 +81,7 @@ class ParserTable {
         void fillInTable(const Dfa&);
         unordered_map< state , set<int> , stateHash_DiffLk, stateEqual_DiffLk > statesToBeMerged;
 
-        void merge();
+        void merge(); 
         void replaceEverInstance(int,int);
     public:
         ParserTable();

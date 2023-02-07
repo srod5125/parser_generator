@@ -44,6 +44,7 @@ int main(){
 //https://www.wikiwand.com/en/Extended_Backus%E2%80%93Naur_form
 //https://www.youtube.com/@verificationandsynthesis5375/videos
 //https://cs.stackexchange.com/questions/152523/how-is-the-lookahead-for-an-lr1-automaton-computed
+//https://www.geeksforgeeks.org/lalr-parser-with-examples/
 
 
 //general outline

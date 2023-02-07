@@ -453,7 +453,7 @@ void Dfa::goToState(state& s){ //TODO: fix
     // for(const auto& arrow : toVisit){
     //     goToState(*s.transitions[arrow]);
     // }
-    LOG(s);
+    //LOG(s);
     
 }
 

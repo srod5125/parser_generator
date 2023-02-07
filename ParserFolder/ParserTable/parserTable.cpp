@@ -41,10 +41,10 @@ std::size_t stateHash_DiffLk::operator()(const state& s) const{
     std::hash<bool> boolHasher;
     
     for(const auto& l : s.productions){
-        seed ^= intHasher(l.dotPosition) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= boolHasher(l.prod.isTerminal) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= intHasher(l.dotPosition);
+        seed ^= boolHasher(l.prod.isTerminal);
         for(const auto& p: l.prod.production_rule[0]){
-            seed ^= stringHasher(p) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= stringHasher(p);
         }
         //note no look ahead hash
     }
@@ -55,7 +55,7 @@ bool stateEqual_DiffLk::operator()(const state & lhs, const state & rhs) const{
     bool same = true;
     // we do not test state num equallity
     if(lhs.productions.size() != rhs.productions.size()) {return false;}
-    
+
     struct stringVecHash {
         size_t operator()(const vector<string>& v) const {
             std::hash<string> hasher;
@@ -100,7 +100,7 @@ ParserTable::ParserTable():actionTable{},gotoTable{},actionColumnMap{},gotoColum
 ParserTable::ParserTable(const Dfa& d){
     init(d);
     fillInTable(d);
-    
+    // LOG(*this)
     // for(const auto& s : statesToBeMerged){
     //     std::cout << s.first.stateNum << "\t{ ";
     //     for(const auto& el: s.second){
@@ -121,7 +121,7 @@ void ParserTable::init(const Dfa& d){
             actionColumnMap[sym] = count_terminals; //set colum map of terminal to table array
             count_terminals += 1;
         }
-        else{
+        else{//TODO: ignore S' in cosntruction
             gotoColumnMap[sym] = count_nonterminals; //set colum map of nonterminal to table array
             count_nonterminals += 1;
         }
@@ -204,14 +204,12 @@ std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
     }
     return out;
 }
-
-void ParserTable::fillInTable(const Dfa& d){
     //perform dfs,
     //as a state is reached add it to map
     //key:state,value:set(state numbers)
     //fill in table transition steps based on grammer
-    stateHash_DiffLk stHshLk;
-
+void ParserTable::fillInTable(const Dfa& d){
+    //verified over simple grammar
     stack<state> dfaTrace;
     unordered_set<state,state::hash,state::equal> visited;
     dfaTrace.push(*d.startPtr);
@@ -222,27 +220,31 @@ void ParserTable::fillInTable(const Dfa& d){
         curr_state = dfaTrace.top();
         dfaTrace.pop();
         if(visited.find(curr_state)==visited.end()){
+            //LOG(curr_state)
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
-            if(curr_state.rank == status::closed){
-                //for each prodution 
-                for(const auto& l : curr_state.productions){
-                    for(const auto& lk : l.lookahead){
-                        actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
-                        move(step::reduce,l.prod.production_rule[0].size(),l.prod.name);//add nontmerinal to reduc instruction
-                        //size in subsitute for canonical item number
-                        //already available
+            switch (curr_state.rank)
+            {
+                //-------------------------------------
+                case status::closed:
+                    for(const auto& l : curr_state.productions){
+                        for(const auto& lk : l.lookahead){
+                            actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
+                            move(step::reduce,l.prod.production_rule[0].size(),l.prod.name);//add nontmerinal to reduc instruction
+                            //size in subsitute for canonical item number
+                            //already available
+                        }
                     }
-                }
-            }
-            else{
-                for(const auto& t: curr_state.transitions){
-                    if(t.second->rank == status::accept){
-                        actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
-                        move(step::accept,-1);
-                    }
-                    else{
+                break;
+                //-------------------------------------
+                case status::accept:
+                    actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
+                    move(step::accept,-1);
+                break;
+                //-------------------------------------
+                default:
+                    for(const auto& t: curr_state.transitions){
                         if(d.grammar.at(t.first).isTerminal){
                             actionTable[curr_state.stateNum][actionColumnMap[t.first]] = 
                             move(step::shift,t.second->stateNum);
@@ -251,11 +253,12 @@ void ParserTable::fillInTable(const Dfa& d){
                             gotoTable[curr_state.stateNum][gotoColumnMap[t.first]] =
                             move(step::none,t.second->stateNum);
                         }
-                    }
 
-                    dfaTrace.push(*t.second);
-                }
+                        dfaTrace.push(*t.second);
+                    }
+                break;
             }
+            
             visited.insert(curr_state);
         }
 
@@ -263,41 +266,41 @@ void ParserTable::fillInTable(const Dfa& d){
 
 }
 
-
+//delete duplicate, perform union over equal states with diff lookaheads
 void ParserTable::merge(){
+//verified over simple grammar
+    //write over equal states as equals
+    //expensive n^2 operation
     for(const auto& m : statesToBeMerged){
         if(m.second.size()>1){
             auto first = m.second.begin();
-            for(auto iter = std::next(m.second.begin());iter!=m.second.end();++iter){
-                 if(actionTable[*first]!=actionTable[*iter] && gotoTable[*first]!=gotoTable[*iter]){
+            for(auto iter = ++m.second.begin();iter!=m.second.end();++iter){
+                replaceEverInstance(*first,*iter);
+            }
+        }
+    }
+
+    //merge states
+    for(const auto& m : statesToBeMerged){
+        if(m.second.size()>1){
+            auto first = m.second.begin();
+            for(auto iter = ++m.second.begin();iter!=m.second.end();++iter){
+
+                 if(actionTable[*first]!=actionTable[*iter] || gotoTable[*first]!=gotoTable[*iter]){
                     for(int i=0;i<actionTable[0].size();i+=1){
-                        if(actionTable[*first][i].s!=step::error&&actionTable[*iter][i].s!=step::error
-                        &&actionTable[*first][i]!=actionTable[*iter][i]){
-                            LOG("merge conflict")
-                        }
-                        else{
-                            if(actionTable[*iter][i].s!=step::error){
-                                actionTable[*first][i] = actionTable[*iter][i];
-                            }
+                        if(actionTable[*iter][i].s!=step::error){
+                            actionTable[*first][i] = actionTable[*iter][i];
                         }
                     }
                     for(int i=0;i<gotoTable[0].size();i+=1){
-                        if(gotoTable[*first][i].s!=step::error&&gotoTable[*iter][i].s!=step::error
-                        &&gotoTable[*first][i]!=gotoTable[*iter][i]){
-                            LOG("merge conflict")
-                        }
-                        else{
-                            if(gotoTable[*iter][i].s!=step::error){
-                                gotoTable[*first][i] = gotoTable[*iter][i];
-                            }
+                        if(gotoTable[*iter][i].s!=step::error){
+                            gotoTable[*first][i] = gotoTable[*iter][i];
                         }
                     }
                  }
                  //delete row other than first
                  actionTable.erase(actionTable.find(*iter));
                  gotoTable.erase(gotoTable.find(*iter));
-
-                 replaceEverInstance(*first,*iter);//loop through each table for any isntance of
             }
         }
     }

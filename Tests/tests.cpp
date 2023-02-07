@@ -191,12 +191,16 @@ void testParserTable(){
     Dfa d{grammer};
     ParserTable pT{d};
     LOG(pT);
+
+    //test fillin
+    //test merge
+    //write getMove(int state,string val)
 }
 
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
-    testGoto1();
-    //testParserTable();
+    //testGoto1();
+    testParserTable();
 }
