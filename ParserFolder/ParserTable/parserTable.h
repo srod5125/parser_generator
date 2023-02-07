@@ -87,6 +87,9 @@ class ParserTable {
         ParserTable();
         ParserTable(const Dfa&);
         ~ParserTable();
+
+        move getMove(int,const string&);
+        move getMove(int,string&&);
     
         friend std::ostream& operator<< (std::ostream&, const ParserTable&);
 };

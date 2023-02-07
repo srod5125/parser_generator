@@ -327,4 +327,25 @@ void ParserTable::replaceEverInstance(int state, int stateToBeReplaced){
     }
 }
 
+//does bounds checking
+move ParserTable::getMove(int state,const string& val){
+    if(actionColumnMap.find(val)!=actionColumnMap.end()){
+        if(0<=state && state<actionTable.size()){
+            return actionTable[state][actionColumnMap[val]];
+        }
+        else{
+            return move();
+        }
+    }
+    if(gotoColumnMap.find(val)!=gotoColumnMap.end()){
+        if(0<=state && state<gotoTable.size()){
+            return gotoTable[state][gotoColumnMap[val]];
+        }
+        else{
+            return move();
+        }
+    }
+    return move();
+}
+
 ParserTable::~ParserTable(){}
