@@ -12,6 +12,7 @@
 #include "../LexerFolder/lexer.h"
 #include "../ParserFolder/DfaFolder/dfa.h"
 #include "../CommonFolder/common.h"
+#include "../ParserFolder/ParserTable/parserTable.h"
 
 using std::string;
 using std::unordered_map;
@@ -38,13 +39,7 @@ void testLexer1(){
 
     std::cout << l;
 }
-void printSet(const unordered_set<string>& x){
-    std::cout << "{ ";
-    for(const auto& el: x){
-        std::cout << el << " ";
-    }
-    std::cout << " }" << std::endl;
-}
+
 void testFirstDfa(){
 
     unordered_map<string,symbol> grammer;
@@ -147,6 +142,7 @@ void testGoto1(){
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
+    grammer["$"] = symbol({"$"});
 
     // unordered_map<string,symbol> grammer2;
     // grammer2["S'"] = symbol("S'",{"E"});
@@ -175,7 +171,7 @@ void testGoto1(){
     //unordered_set<line,line::hash,line::equal> x;
     //x.insert(l);
 
-    Dfa d{grammer3};
+    Dfa d{grammer};
     //shared_ptr<state> s{d.closure(x)};
     //LOG(*s)
     //s->rank = status::start;
@@ -183,9 +179,24 @@ void testGoto1(){
     //d.goToState(*s);//init
 }
 
+void testParserTable(){
+    unordered_map<string,symbol> grammer;
+    grammer["S'"] = symbol("S'",vector<string>{"S"});
+    grammer["S"] = symbol("S",vector<string>{"A","A"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    grammer["a"] = symbol({"a"});
+    grammer["b"] = symbol({"b"});
+    grammer["$"] = symbol({"$"});
+
+    Dfa d{grammer};
+    ParserTable pT{d};
+    LOG(pT);
+}
+
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
     testGoto1();
+    //testParserTable();
 }

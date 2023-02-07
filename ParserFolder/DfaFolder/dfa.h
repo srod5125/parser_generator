@@ -19,7 +19,7 @@ using std::string;
 
 
 //dot position, production list, lookahead set
-struct line : public index {
+struct line {
     int dotPosition;
     symbol prod; // s-> ABB
     unordered_set<string> lookahead;
@@ -58,6 +58,17 @@ struct state{
     state();
     state(int,line);
     state(const unordered_set<line,line::hash,line::equal>&);
+
+    bool operator==(const state&) const;
+
+    struct hash
+    {
+        std::size_t operator()( const state& ) const;
+    };
+    struct equal
+    {
+        bool operator()(const state&,const state&) const;
+    };
 
     friend std::ostream& operator<< (std::ostream&, const state&);
 };

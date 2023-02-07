@@ -16,6 +16,8 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
+#include <map>
 #include <iostream>
 
 #include "../DfaFolder/dfa.h"
@@ -23,6 +25,9 @@
 using std::pair;
 using std::vector;
 using std::unordered_map;
+using std::unordered_set;
+using std::set;
+using std::map;
 
 //states to be merged map(setoflinesNoLookAhead,statenum)
 
@@ -39,7 +44,8 @@ enum class step:char {
     none,
     shift,
     reduce,
-    accept
+    accept,
+    error
 };
 
 struct stateHash_DiffLk {
@@ -49,19 +55,34 @@ struct stateEqual_DiffLk {
     bool operator()(const state&,const state&) const;
 };
 
+struct move{
+    step s;
+    int state;
+    string nonterminal;
+
+    move();
+    move(step,int);//shift setter;
+    move(step,int,const string&);
+    move(step,int,string&&);
+
+    bool operator==(const move&) const;
+    bool operator!=(const move&) const;
+};
+
 class ParserTable {
     private:
-        vector< vector< pair<step,int> > > actionTable;
-        vector< vector< pair<step,int> > > gotoTable;
+        map< int , vector<move> > actionTable; //state num // transitions
+        map< int , vector<move> > gotoTable;
 
         unordered_map<string,int> actionColumnMap;
         unordered_map<string,int> gotoColumnMap;
 
         void init(const Dfa&);
         void fillInTable(const Dfa&);
-        unordered_map< state , unordered_set<int> , stateHash_DiffLk, stateEqual_DiffLk > statesToBeMerged;
+        unordered_map< state , set<int> , stateHash_DiffLk, stateEqual_DiffLk > statesToBeMerged;
 
         void merge();
+        void replaceEverInstance(int,int);
     public:
         ParserTable();
         ParserTable(const Dfa&);

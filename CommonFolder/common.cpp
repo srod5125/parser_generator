@@ -1,19 +1,27 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <unordered_set>
 
 
 using std::string;
 using std::vector;
+using std::unordered_set;
 
 
 #include "common.h"
 
+// token
 token::token() : tag("EMPTY"), terminal("") {} // empty token init
 token::token(const string& t,const string& ter) : tag(t), terminal(terminal) { } //std::cout<<"constructor "<<terminal<<std::endl;}
 token::token(const string&& t,const string&& ter) : tag{t}, terminal{terminal} {}
 token::token(const string&& t) : tag{t}, terminal{t} {} // same
 
+bool token::operator==(const token& rhs) const{
+    return this->tag == rhs.tag && this->terminal == rhs.terminal;
+}
+
+// symbol
 symbol::symbol() : isTerminal{true}, name{"EMPTY"}, t{}, production_rule{} {}
 symbol::symbol(const string&& n, const vector<vector<string>>&& rules){
     isTerminal=false;
@@ -68,3 +76,20 @@ std::ostream& operator<< (std::ostream& out, const symbol& sym){
     return out;
 }
 
+bool symbol::operator==(const symbol& rhs) const{
+    if(this->isTerminal != rhs.isTerminal) {return false;}
+    if(this->name != rhs.name) {return false;}
+    if(this->production_rule != rhs.production_rule) {return false;}
+    if(!(this->t == rhs.t)) {return false;}
+    return true;
+}
+
+
+template <typename T>
+void printSet(const unordered_set<T>& x){
+    std::cout << "{ ";
+    for(const auto& el: x){
+        std::cout << el << " ";
+    }
+    std::cout << " }" << std::endl;
+}
