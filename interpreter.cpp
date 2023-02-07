@@ -52,4 +52,4 @@ int main(){
 //write parsing procedure
 //get ast from procedure
 //hardcode ebnf gramamr
-//using ast 
+//using ast

@@ -71,6 +71,8 @@ struct move{
 
 class ParserTable {
     private:
+        Dfa d;//here : make parser table accept grammer then instantiate dfa
+
         map< int , vector<move> > actionTable; //state num // transitions
         map< int , vector<move> > gotoTable;
 
