@@ -45,7 +45,7 @@ void Lexer::split(const string& t, const unordered_map<string,regex>& patternAnd
     }
     //unpack contents of sorted map into tokens array
     for(auto& tok: sortedMap){
-        tokens.push_back(tok.second);
+        tokens.emplace_back(tok.second);
     }
 }
 
