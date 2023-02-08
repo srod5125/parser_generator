@@ -21,6 +21,7 @@
 #include <iostream>
 
 #include "../DfaFolder/dfa.h"
+#include "../../CommonFolder/common.h"
 
 using std::pair;
 using std::vector;
@@ -79,15 +80,15 @@ class ParserTable {
         unordered_map<string,int> actionColumnMap;
         unordered_map<string,int> gotoColumnMap;
 
-        void init(const Dfa&);
-        void fillInTable(const Dfa&);
+        void init();
+        void fillInTable();
         unordered_map< state , set<int> , stateHash_DiffLk, stateEqual_DiffLk > statesToBeMerged;
 
         void merge(); 
         void replaceEverInstance(int,int);
     public:
         ParserTable();
-        ParserTable(const Dfa&);
+        ParserTable(const unordered_map<string,symbol>& g);
         ~ParserTable();
 
         move getMove(int,const string&);

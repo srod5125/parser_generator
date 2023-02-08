@@ -15,7 +15,7 @@ using std::pair;
 using std::stack;
 using std::setw;
 
-
+#include "../../CommonFolder/common.h"
 #include "parserTable.h"
 
 #define LOG(msg) std::cout << msg << std::endl;
@@ -95,11 +95,12 @@ bool stateEqual_DiffLk::operator()(const state & lhs, const state & rhs) const{
 
 
 //parsering table
-ParserTable::ParserTable():actionTable{},gotoTable{},actionColumnMap{},gotoColumnMap{},statesToBeMerged{} {}
+ParserTable::ParserTable():actionTable{},gotoTable{},actionColumnMap{},gotoColumnMap{},statesToBeMerged{},d{} {}
 
-ParserTable::ParserTable(const Dfa& d){
-    init(d);
-    fillInTable(d);
+ParserTable::ParserTable(const unordered_map<string,symbol>& g){
+    d = Dfa(g);
+    init();
+    fillInTable();
     // LOG(*this)
     // for(const auto& s : statesToBeMerged){
     //     std::cout << s.first.stateNum << "\t{ ";
@@ -112,7 +113,7 @@ ParserTable::ParserTable(const Dfa& d){
     //LOG(actionTable.size())
 }
 
-void ParserTable::init(const Dfa& d){
+void ParserTable::init(){
     int count_nonterminals = 0;
     int count_terminals = 0;
 
@@ -208,7 +209,7 @@ std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
     //as a state is reached add it to map
     //key:state,value:set(state numbers)
     //fill in table transition steps based on grammer
-void ParserTable::fillInTable(const Dfa& d){
+void ParserTable::fillInTable(){
     //verified over simple grammar
     stack<state> dfaTrace;
     unordered_set<state,state::hash,state::equal> visited;
@@ -329,7 +330,7 @@ void ParserTable::replaceEverInstance(int state, int stateToBeReplaced){
 
 //does bounds checking
 move ParserTable::getMove(int state,const string& val){
-    if(actionColumnMap.find(val)!=actionColumnMap.end()){
+    if(d.grammar[val].isTerminal){
         if(0<=state && state<actionTable.size()){
             return actionTable[state][actionColumnMap[val]];
         }
@@ -337,7 +338,7 @@ move ParserTable::getMove(int state,const string& val){
             return move();
         }
     }
-    if(gotoColumnMap.find(val)!=gotoColumnMap.end()){
+    else{
         if(0<=state && state<gotoTable.size()){
             return gotoTable[state][gotoColumnMap[val]];
         }

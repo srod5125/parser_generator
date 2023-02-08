@@ -188,8 +188,7 @@ void testParserTable(){
     grammer["b"] = symbol({"b"});
     grammer["$"] = symbol({"$"});
 
-    Dfa d{grammer};
-    ParserTable pT{d};
+    ParserTable pT{grammer};
     LOG(pT);
 
     //test fillin
