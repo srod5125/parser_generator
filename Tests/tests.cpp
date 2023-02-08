@@ -181,12 +181,10 @@ void testGoto1(){
 
 void testParserTable(){
     unordered_map<string,symbol> grammer;
-    grammer["S'"] = symbol("S'",vector<string>{"S"});
     grammer["S"] = symbol("S",vector<string>{"A","A"});
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
-    grammer["$"] = symbol({"$"});
 
     ParserTable pT{grammer};
     LOG(pT);

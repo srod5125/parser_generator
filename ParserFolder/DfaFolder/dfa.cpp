@@ -187,22 +187,22 @@ Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, initProdSMap{} {
     startPtr->stateNum = 0;
     goToState(*startPtr);
 }
-Dfa::Dfa(const unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
+Dfa::Dfa(unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
     grammar = g;
 
-    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"});
-    unordered_set<line,line::hash,line::equal> x;
+    symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
+    g["S'"] = s0;
+    g["$"] = symbol({"$"});
+
+    line augmentedStart = line(0,s0,{"$"});
+    lineSet x;
     x.insert(augmentedStart);
     startPtr = closure(x);
     startPtr->rank = status::start;
     startPtr->stateNum = 0;
     goToState(*startPtr);
 }
-Dfa::~Dfa() {
-    line augmentedStart = line(0,symbol("S'",{"start"}),{"$"});
-    //start = state(0,augmentedStart);
-    startPtr = std::make_unique<state>(0,augmentedStart);
-}
+Dfa::~Dfa() {}
 
 // void printStack(stack<string> s){
 //     while(!s.empty()){

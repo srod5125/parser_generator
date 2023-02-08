@@ -97,7 +97,7 @@ bool stateEqual_DiffLk::operator()(const state & lhs, const state & rhs) const{
 //parsering table
 ParserTable::ParserTable():actionTable{},gotoTable{},actionColumnMap{},gotoColumnMap{},statesToBeMerged{},d{} {}
 
-ParserTable::ParserTable(const unordered_map<string,symbol>& g){
+ParserTable::ParserTable(unordered_map<string,symbol>& g){
     d = Dfa(g);
     init();
     fillInTable();

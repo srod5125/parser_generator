@@ -98,7 +98,7 @@ class Dfa {
         int globalStateNum;
 
         Dfa();
-        Dfa(const unordered_map<string,symbol>&);
+        Dfa(unordered_map<string,symbol>&);
         ~Dfa();
 
         //unordered_set<string> first(const string&);

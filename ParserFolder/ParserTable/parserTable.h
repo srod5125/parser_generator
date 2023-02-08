@@ -88,7 +88,7 @@ class ParserTable {
         void replaceEverInstance(int,int);
     public:
         ParserTable();
-        ParserTable(const unordered_map<string,symbol>& g);
+        ParserTable(unordered_map<string,symbol>& g);
         ~ParserTable();
 
         move getMove(int,const string&);
