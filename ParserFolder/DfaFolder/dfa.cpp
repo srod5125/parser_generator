@@ -105,18 +105,23 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     out << "STATE:" << s.stateNum << "\t";
     switch (s.rank)
     {
-        case status::accept:
+        case status::accept:{
             out << "ACCEPTING";
             break;
-        case status::closed:
+        }
+        case status::closed:{
             out << "CLOSED";
             break;
-        case status::intermediate:
+        }
+        case status::intermediate:{
             out << "INTERMEDIATE";
             break;
-        case status::start:
+        }
+        case status::start:{
             out << "START";
             break;
+        }
+            
         default:
             break;
     }
@@ -192,7 +197,6 @@ Dfa::Dfa(unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, init
 
     symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
     g["S'"] = s0;
-    g["$"] = symbol({"$"});
 
     line augmentedStart = line(0,s0,{"$"});
     lineSet x;
@@ -388,8 +392,8 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         aux.insert(l);
     }
     shared_ptr<state> sI = std::make_shared<state>(aux);
-    sI->rank = (allClosed && !(sI->rank==status::start)) ? status::closed : status::intermediate;
     sI->rank = encounteredAcceptCondition ? status::accept : sI->rank;
+    sI->rank = (allClosed && !encounteredAcceptCondition) ? status::closed : status::intermediate;
     //LOG("hit here")
     //std::cout << sI;
     return sI;

@@ -48,6 +48,7 @@ enum class step:char {
     accept,
     error
 };
+char getStepChar(const step);
 
 struct stateHash_DiffLk {
     std::size_t operator()(const state&) const;
@@ -59,6 +60,7 @@ struct stateEqual_DiffLk {
 struct move{
     step s;
     int state;
+    int len;
     string nonterminal;
 
     move();
@@ -72,7 +74,7 @@ struct move{
 
 class ParserTable {
     private:
-        Dfa d;//here : make parser table accept grammer then instantiate dfa
+        Dfa d;
 
         map< int , vector<move> > actionTable; //state num // transitions
         map< int , vector<move> > gotoTable;
@@ -88,11 +90,12 @@ class ParserTable {
         void replaceEverInstance(int,int);
     public:
         ParserTable();
-        ParserTable(unordered_map<string,symbol>& g);
+        ParserTable(unordered_map<string,symbol>&);
         ~ParserTable();
 
         move getMove(int,const string&);
         move getMove(int,string&&);
+        move getMove(const pair<int,string>&);
     
         friend std::ostream& operator<< (std::ostream&, const ParserTable&);
 };

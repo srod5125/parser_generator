@@ -20,17 +20,33 @@ using std::setw;
 
 #define LOG(msg) std::cout << msg << std::endl;
 
+//step char
+char getStepChar(const step thiStep){
+    switch (thiStep)
+    {
+        case step::accept : return 'A';
+        case step::error : return 'E';
+        case step::none : return 'N';
+        case step::reduce : return 'R';
+        case step::shift : return 'S';
+        
+        default: return 'X';
+    }
+}
+
 //move defs
-move::move() : s{step::error},state{-1},nonterminal{} {}//default
-move::move(step stp, int stat) : s(stp),state(stat),nonterminal{} {}//shift or none
-move::move(step stp, int stat,const string& n) : s(stp),state(stat),nonterminal{n} {}
-move::move(step stp, int stat,string&& n) : s(stp),state(stat),nonterminal{n} {}
+move::move() : s{step::error},state{-1},nonterminal{},len{0} {}//default
+move::move(step stp, int stat) : s(stp),state(stat),nonterminal{},len{0} {}//shift or none
+move::move(step stp, int lenOfProd,const string& n) : s(stp),state(-1),nonterminal{n},len{lenOfProd} {}
+move::move(step stp, int lenOfProd,string&& n) : s(stp),state(-1),nonterminal{n},len{lenOfProd} {}
 
 bool move::operator==(const move& rhs) const{
-    return this->s == rhs.s && this->state == rhs.state && this->nonterminal == rhs.nonterminal;
+    return this->s == rhs.s && this->state == rhs.state 
+            && this->nonterminal == rhs.nonterminal && this->len == rhs.len;
 }
 bool move::operator!=(const move& rhs) const{
-    return this->s != rhs.s || this->state != rhs.state || this->nonterminal != rhs.nonterminal;
+    return this->s != rhs.s || this->state != rhs.state 
+            || this->nonterminal != rhs.nonterminal || this->len != rhs.len;
 }
 
 //helpers
@@ -100,6 +116,8 @@ ParserTable::ParserTable():actionTable{},gotoTable{},actionColumnMap{},gotoColum
 ParserTable::ParserTable(unordered_map<string,symbol>& g){
     d = Dfa(g);
     init();
+    // LOG(actionColumnMap["$"])
+    // LOG(actionColumnMap["b"])
     fillInTable();
     // LOG(*this)
     // for(const auto& s : statesToBeMerged){
@@ -111,6 +129,10 @@ ParserTable::ParserTable(unordered_map<string,symbol>& g){
     // }
     merge();
     //LOG(actionTable.size())
+    // string k =  actionTable[1][actionColumnMap["b"]].s == step::accept ? "acc" : "nope";
+    // LOG(k)
+    // LOG(actionColumnMap["$"])
+    // LOG(actionColumnMap["b"])
 }
 
 void ParserTable::init(){
@@ -120,6 +142,7 @@ void ParserTable::init(){
     for(auto& [sym,prod]: d.grammar){
         if(prod.isTerminal){
             actionColumnMap[sym] = count_terminals; //set colum map of terminal to table array
+            //LOG(sym << " " << count_terminals)
             count_terminals += 1;
         }
         else{//TODO: ignore S' in cosntruction
@@ -161,21 +184,27 @@ std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
     auto getStepString = [&out](move m){ //,&spc
         switch (m.s)
         {
-            case step::accept: 
-                out << "A" << m.state;
+            case step::accept: {
+                out << "A";
                 break;
-            case step::none:
-                out << " " << m.state;
+            }
+            case step::none:{
+                out << m.state;
                 break;
-            case step::reduce:
-                out << "R" << m.state << m.nonterminal;
+            }
+                
+            case step::reduce:{
+                out << "R" << m.nonterminal << m.len;
                 break;
-            case step::shift:
+            }
+            case step::shift:{
                 out << "S" << m.state;
                 break;
-            default:
+            }
+            default:{
                 out << "_"; //out << "E" << -1;
                 break;
+            }
         }
         out << "\t";
     };
@@ -225,10 +254,9 @@ void ParserTable::fillInTable(){
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
-            switch (curr_state.rank)
-            {
+            switch (curr_state.rank) {
                 //-------------------------------------
-                case status::closed:
+                case status::closed:{
                     for(const auto& l : curr_state.productions){
                         for(const auto& lk : l.lookahead){
                             actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
@@ -237,14 +265,16 @@ void ParserTable::fillInTable(){
                             //already available
                         }
                     }
-                break;
+                    break;
+                }
                 //-------------------------------------
-                case status::accept:
+                case status::accept:{
                     actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
                     move(step::accept,-1);
-                break;
+                    break;
+                }
                 //-------------------------------------
-                default:
+                default:{
                     for(const auto& t: curr_state.transitions){
                         if(d.grammar.at(t.first).isTerminal){
                             actionTable[curr_state.stateNum][actionColumnMap[t.first]] = 
@@ -257,14 +287,14 @@ void ParserTable::fillInTable(){
 
                         dfaTrace.push(*t.second);
                     }
-                break;
+                    break;
+                }
             }
             
             visited.insert(curr_state);
         }
 
     }
-
 }
 
 //delete duplicate, perform union over equal states with diff lookaheads
@@ -340,7 +370,28 @@ move ParserTable::getMove(int state,const string& val){
     }
     else{
         if(0<=state && state<gotoTable.size()){
+            //LOG("\t\t"<<state<<val)
             return gotoTable[state][gotoColumnMap[val]];
+        }
+        else{
+            return move();
+        }
+    }
+    return move();
+}
+
+move ParserTable::getMove(const pair<int,string>& pr){
+    if(d.grammar[pr.second].isTerminal){
+        if(0<=pr.first && pr.first<actionTable.size()){
+            return actionTable[pr.first][actionColumnMap[pr.second]];
+        }
+        else{
+            return move();
+        }
+    }
+    else{
+        if(0<=pr.first && pr.first<gotoTable.size()){
+            return gotoTable[pr.first][gotoColumnMap[pr.second]];
         }
         else{
             return move();

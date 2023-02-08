@@ -13,6 +13,7 @@
 #include "../ParserFolder/DfaFolder/dfa.h"
 #include "../CommonFolder/common.h"
 #include "../ParserFolder/ParserTable/parserTable.h"
+#include "../ParserFolder/parser.h"
 
 using std::string;
 using std::unordered_map;
@@ -185,6 +186,7 @@ void testParserTable(){
     grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
     grammer["a"] = symbol({"a"});
     grammer["b"] = symbol({"b"});
+    grammer["$"] = symbol({"$"});
 
     ParserTable pT{grammer};
     LOG(pT);
@@ -194,10 +196,25 @@ void testParserTable(){
     //write getMove(int state,string val)
 }
 
+void testParser(){
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",vector<string>{"A","A"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    grammer["a"] = symbol({"a"});
+    grammer["b"] = symbol({"b"});
+    grammer["$"] = symbol({"$"});
+    //void parse(vector<string>&&);
+
+    Parser p{grammer};
+    vector<string> input = {"a","a","b","b","$"}; //append end
+    p.parse(input);
+}
+
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
     //testGoto1();
-    testParserTable();
+    //testParserTable();
+    testParser();
 }

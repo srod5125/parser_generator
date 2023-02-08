@@ -5,6 +5,7 @@
 #include "../ParserFolder/DfaFolder/dfa.h"
 #include "../CommonFolder/common.h"
 #include "../ParserFolder/ParserTable/parserTable.h"
+#include "../ParserFolder/parser.h"
 
 
 void runAllTest();
@@ -13,5 +14,6 @@ void testFirstDfa();
 void testDfaClosure();
 void testGoto1();
 void testParserTable();
+void testParser();
 
 #endif
