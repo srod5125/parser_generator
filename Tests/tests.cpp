@@ -206,7 +206,21 @@ void testParser(){
     //void parse(vector<string>&&);
 
     Parser p{grammer};
-    vector<string> input = {"a","a","a","a","a","a","b","b","$"}; //append end
+    vector<string> input = {"a","a","b","b","$"}; //append end
+    p.parse(input);
+}
+
+void testAST(){
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",vector<string>{"A","A"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    grammer["a"] = symbol({"a"});
+    grammer["b"] = symbol({"b"});
+    grammer["$"] = symbol({"$"});
+    //void parse(vector<string>&&);
+
+    Parser p{grammer};
+    vector<string> input = {"a","a","b","b","$"}; //append end
     p.parse(input);
 }
 
@@ -216,5 +230,6 @@ void runAllTest(){
     //testDfaClosure();
     //testGoto1();
     //testParserTable();
-    testParser();
+    //testParser();
+    testAST();
 }

@@ -33,7 +33,6 @@ class Parser{
         Parser(unordered_map<string,symbol>&);
         ~Parser();
 
-        Ast getTree(const string& dsl_text);
         void parse(const vector<string>&);
         //void parse(vector<string>&&);
 };

@@ -51,6 +51,8 @@ int main(){
 //general outline
 
 //write parsing procedure
+//  integrate lexer with parser
+//  vector of tokens
 //get ast from procedure
 //hardcode ebnf gramamr
 //using ast to construct second grammar

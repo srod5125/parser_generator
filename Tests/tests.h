@@ -15,5 +15,6 @@ void testDfaClosure();
 void testGoto1();
 void testParserTable();
 void testParser();
+void testAST();
 
 #endif
