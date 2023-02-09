@@ -206,7 +206,7 @@ void testParser(){
     //void parse(vector<string>&&);
 
     Parser p{grammer};
-    vector<string> input = {"a","a","b","b","$"}; //append end
+    vector<string> input = {"a","a","a","a","a","a","b","b","$"}; //append end
     p.parse(input);
 }
 

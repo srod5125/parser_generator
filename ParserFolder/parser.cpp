@@ -67,8 +67,8 @@ void Parser::parse(const vector<string>& input){
                 break;
             }
         
-        m = pT.getMove(pStack.top());
-        //m = pT.getMove(pStack.top().first,pStack.top().second);
+        //m = pT.getMove(pStack.top());
+        m = pT.getMove(pStack.top().first,input[pointer]);
         
         LOG("move")
         LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" "<<pStack.top().second)
@@ -81,7 +81,7 @@ void Parser::parse(const vector<string>& input){
         //     m.s = step::error;
         // }
 
-        for(int j=0;j<pointer;j+=1){
+        for(int j=0;j<=pointer;j+=1){
             std::cout << input[j];
         }
         LOG("")
