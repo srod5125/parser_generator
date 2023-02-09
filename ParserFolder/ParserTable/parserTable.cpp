@@ -130,7 +130,7 @@ ParserTable::ParserTable(unordered_map<string,symbol>& g){
     merge();
     //LOG(actionTable.size())
     // string k =  actionTable[1][actionColumnMap["b"]].s == step::accept ? "acc" : "nope";
-    // LOG(k)
+    //LOG(getStepChar(actionTable[23][actionColumnMap["1"]].s)<<actionTable[23][actionColumnMap["1"]].nonterminal)
     // LOG(actionColumnMap["$"])
     // LOG(actionColumnMap["b"])
 }
@@ -151,12 +151,12 @@ void ParserTable::init(){
         }
     }
     //creating action table [numOfStates,currTerminalMapVal]
-    for(int i=0;i<d.globalStateNum+1;i+=1){
+    for(int i=0;i<d.globalStateNum;i+=1){
         vector< move > tmp(actionColumnMap.size(),move());
         actionTable[i] = tmp;
     }
     //creating goto table [numOfStates,currNonTerminalMapVal]
-    for(int i=0;i<d.globalStateNum+1;i+=1){
+    for(int i=0;i<d.globalStateNum;i+=1){
         vector< move > tmp(gotoColumnMap.size(),move());
         gotoTable[i] = tmp;
     }
@@ -250,7 +250,7 @@ void ParserTable::fillInTable(){
         curr_state = dfaTrace.top();
         dfaTrace.pop();
         if(visited.find(curr_state)==visited.end()){
-            //LOG(curr_state)
+            LOG(curr_state)
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
@@ -360,44 +360,49 @@ void ParserTable::replaceEverInstance(int state, int stateToBeReplaced){
 
 //does bounds checking
 move ParserTable::getMove(int state,const string& val){
+    LOG("\t\tS: "<<state<<" V: "<<val)
     if(d.grammar[val].isTerminal){
-        if(0<=state && state<actionTable.size()){
+        //if(0<=state && state<actionTable.size()){
+            LOG("\t\t"<<getStepChar(actionTable[state][actionColumnMap[val]].s)<<actionTable[state][actionColumnMap[val]].state)
             return actionTable[state][actionColumnMap[val]];
-        }
-        else{
-            return move();
-        }
+        // }
+        // else{
+        //     LOG("\t\tE_1")
+        //     return move();
+        // }
     }
     else{
-        if(0<=state && state<gotoTable.size()){
-            //LOG("\t\t"<<state<<val)
+        //if(0<=state && state<gotoTable.size()){
+            LOG("\t\t"<<getStepChar(gotoTable[state][gotoColumnMap[val]].s)<<gotoTable[state][gotoColumnMap[val]].nonterminal)
             return gotoTable[state][gotoColumnMap[val]];
-        }
-        else{
-            return move();
-        }
+        // }
+        // else{
+        //     LOG("\t\tE_2")
+        //     return move();
+        // }
     }
-    return move();
+    // LOG("\t\tE_3")
+    // return move();
 }
 
-move ParserTable::getMove(const pair<int,string>& pr){
-    if(d.grammar[pr.second].isTerminal){
-        if(0<=pr.first && pr.first<actionTable.size()){
-            return actionTable[pr.first][actionColumnMap[pr.second]];
-        }
-        else{
-            return move();
-        }
-    }
-    else{
-        if(0<=pr.first && pr.first<gotoTable.size()){
-            return gotoTable[pr.first][gotoColumnMap[pr.second]];
-        }
-        else{
-            return move();
-        }
-    }
-    return move();
-}
+// move ParserTable::getMove(const pair<int,string>& pr){
+//     if(d.grammar[pr.second].isTerminal){
+//         if(0<=pr.first && pr.first<actionTable.size()){
+//             return actionTable[pr.first][actionColumnMap[pr.second]];
+//         }
+//         else{
+//             return move();
+//         }
+//     }
+//     else{
+//         if(0<=pr.first && pr.first<gotoTable.size()){
+//             return gotoTable[pr.first][gotoColumnMap[pr.second]];
+//         }
+//         else{
+//             return move();
+//         }
+//     }
+//     return move();
+// }
 
 ParserTable::~ParserTable(){}

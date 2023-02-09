@@ -25,6 +25,8 @@ using std::shared_ptr;
 
 #define LOG(msg) std::cout << msg << std::endl;
 
+using vecOfVec = vector<vector<string>>;
+
 //isolated test for lexer to see if it splits string correctly
 void testLexer1(){
     string text{"gg 123 gg"};
@@ -43,57 +45,72 @@ void testLexer1(){
 
 void testFirstDfa(){
 
-    unordered_map<string,symbol> grammer;
-    grammer["S'"] = symbol("S'",{"S"});
-    grammer["S"] = symbol("S",vector<string>{"A","A"});
-    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
-    grammer["a"] = symbol({"a"});
-    grammer["b"] = symbol({"b"});
+    // unordered_map<string,symbol> grammer;
+    // grammer["S'"] = symbol("S'",{"S"});
+    // grammer["S"] = symbol("S",vector<string>{"A","A"});
+    // grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
+    // grammer["a"] = symbol({"a"});
+    // grammer["b"] = symbol({"b"});
     
-    unordered_map<string,symbol> grammer3;
-    grammer3["S'"] = symbol("S'",{"P"});
-    grammer3["P"] = symbol("P",{"E"});
-    grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
-    grammer3["+"] = symbol({"+"});
-    grammer3["id"] = symbol({"id"});
-    grammer3["("] = symbol({"("});
-    grammer3[")"] = symbol({")"});
+    // unordered_map<string,symbol> grammer3;
+    // grammer3["S'"] = symbol("S'",{"P"});
+    // grammer3["P"] = symbol("P",{"E"});
+    // grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
+    // grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
+    // grammer3["+"] = symbol({"+"});
+    // grammer3["id"] = symbol({"id"});
+    // grammer3["("] = symbol({"("});
+    // grammer3[")"] = symbol({")"});
 
-    unordered_map<string,symbol> grammer4;
-    grammer4["S"] = symbol("S",vector<vector<string>>{{"A","S"},{"b"}});
-    grammer4["A"] = symbol("A",vector<vector<string>>{{"S","A"},{"a"}});
-    grammer4["a"] = symbol({"a"});
-    grammer4["b"] = symbol({"b"});
+    // unordered_map<string,symbol> grammer4;
+    // grammer4["S"] = symbol("S",vector<vector<string>>{{"A","S"},{"b"}});
+    // grammer4["A"] = symbol("A",vector<vector<string>>{{"S","A"},{"a"}});
+    // grammer4["a"] = symbol({"a"});
+    // grammer4["b"] = symbol({"b"});
 
-    unordered_map<string,symbol> grammer5;
-    grammer5["S"] = symbol("S",vector<vector<string>>{{"a","A","B"},{"B","a"}});
-    grammer5["A"] = symbol("A",{"S"});
-    grammer5["B"] = symbol("S",vector<vector<string>>{{"b"},{"EMPTY"}});
-    grammer5["a"] = symbol({"a"});
-    grammer5["b"] = symbol({"b"});
-    grammer5["EMPTY"] = symbol();
+    // unordered_map<string,symbol> grammer5;
+    // grammer5["S"] = symbol("S",vector<vector<string>>{{"a","A","B"},{"B","a"}});
+    // grammer5["A"] = symbol("A",{"S"});
+    // grammer5["B"] = symbol("S",vector<vector<string>>{{"b"},{"EMPTY"}});
+    // grammer5["a"] = symbol({"a"});
+    // grammer5["b"] = symbol({"b"});
+    // grammer5["EMPTY"] = symbol();
 
-    unordered_map<string,symbol> grammer6;
-    grammer6["S"] = symbol("S",vector<string>{"a","B","D","h"});
-    grammer6["B"] = symbol("B",vector<string>{"c","C"});
-    grammer6["C"] = symbol("C",vector<vector<string>>{{"b","C"},{"EMPTY"}});
-    grammer6["D"] = symbol("D",vector<string>{"E","F"});
-    grammer6["E"] = symbol("E",vector<vector<string>>{{"g"},{"EMPTY"}});
-    grammer6["F"] = symbol("F",vector<vector<string>>{{"f"},{"EMPTY"}});
-    grammer6["a"] = symbol({"a"});
-    grammer6["h"] = symbol({"h"});
-    grammer6["c"] = symbol({"c"});
-    grammer6["g"] = symbol({"g"});
-    grammer6["f"] = symbol({"f"});
-    grammer6["EMPTY"] = symbol();
+    // unordered_map<string,symbol> grammer6;
+    // grammer6["S"] = symbol("S",vector<string>{"a","B","D","h"});
+    // grammer6["B"] = symbol("B",vector<string>{"c","C"});
+    // grammer6["C"] = symbol("C",vector<vector<string>>{{"b","C"},{"EMPTY"}});
+    // grammer6["D"] = symbol("D",vector<string>{"E","F"});
+    // grammer6["E"] = symbol("E",vector<vector<string>>{{"g"},{"EMPTY"}});
+    // grammer6["F"] = symbol("F",vector<vector<string>>{{"f"},{"EMPTY"}});
+    // grammer6["a"] = symbol({"a"});
+    // grammer6["h"] = symbol({"h"});
+    // grammer6["c"] = symbol({"c"});
+    // grammer6["g"] = symbol({"g"});
+    // grammer6["f"] = symbol({"f"});
+    // grammer6["EMPTY"] = symbol();
 
-    Dfa d{grammer6};
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",vector<string>{"E"});
+    grammer["E"] = symbol("E",vecOfVec{{"(","E",")"},{"N","O","E"},{"N"}});
+    grammer["N"] = symbol("N",vecOfVec{{"1"},{"2"},{"3"}});
+    grammer["O"] = symbol("O",vecOfVec{{"+"},{"-"}});
+    grammer["("] = symbol({"("});
+    grammer[")"] = symbol({")"});
+    grammer["+"] = symbol({"+"});
+    grammer["-"] = symbol({"-"});
+
+    Dfa d{grammer};
     unordered_set<string> helper{};
-    string t = "D";
-    //unordered_set<string> x = d.first(t,helper); //make public to test
-    LOG(t)
-    //printSet(x);
+    string t = "O";
+    unordered_set<string> x = d.first(t,helper); //make public to test
+    //LOG(t)
+    std::cout << "{";
+    for(const auto& el:x){
+        std::cout << el << " ";
+    }
+    std::cout << "}";
+    LOG("")
 }
 
 void testDfaClosure(){
@@ -224,6 +241,47 @@ void testAST(){
     p.parse(input);
 }
 
+void testAST2(){
+    // unordered_map<string,symbol> grammer;
+    // grammer["S"] = symbol("S",{"E"});
+    // grammer["E"] = symbol("E",vecOfVec{{"(","E",")"},{"N","O","E"},{"N"}});
+    // grammer["N"] = symbol("N",vecOfVec{{"1"},{"2"},{"3"}});
+    // grammer["O"] = symbol("O",vecOfVec{{"+"},{"-"}});
+    // grammer["("] = symbol({"("});
+    // grammer[")"] = symbol({")"});
+    // grammer["+"] = symbol({"+"});
+    // grammer["-"] = symbol({"-"});
+    // //grammer["/"] = symbol({"/"});
+    // //grammer["*"] = symbol({"*"});
+    // grammer["1"] = symbol({"1"});
+    // grammer["2"] = symbol({"2"});
+    // grammer["3"] = symbol({"3"});
+    // grammer["$"] = symbol({"$"});
+    //void parse(vector<string>&&);
+
+    // unordered_map<string,symbol> grammer3;
+    // grammer3["S"] = symbol("S",{"E"});
+    // grammer3["E"] = symbol("E",vecOfVec{{"E","+","T"},{"T"}});
+    // grammer3["T"] = symbol("T",vecOfVec{{"T","*","F"},{"F"}});
+    // grammer3["F"] = symbol("F",vecOfVec{{"(","E",")"},{"id"}});
+    // grammer3["+"] = symbol({"+"});
+    // grammer3["*"] = symbol({"*"});
+    // grammer3["id"] = symbol({"id"});
+    // grammer3["("] = symbol({"("});
+    // grammer3[")"] = symbol({")"});
+    // grammer3["$"] = symbol({"$"});
+
+    unordered_map<string,symbol> grammer4;
+    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    
+
+    Parser p{grammer4};
+    vector<string> input = {"a","a","+","$"};
+    //vector<string> input = {"id","*","id","+","id","$"}; //append end
+    //vector<string> input = {"1","+","1","$"};
+    p.parse(input);
+}
+
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
@@ -231,5 +289,6 @@ void runAllTest(){
     //testGoto1();
     //testParserTable();
     //testParser();
-    testAST();
+    //testAST();
+    testAST2();
 }

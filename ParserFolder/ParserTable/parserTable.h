@@ -94,8 +94,8 @@ class ParserTable {
         ~ParserTable();
 
         move getMove(int,const string&);
-        move getMove(int,string&&);
-        move getMove(const pair<int,string>&);
+        //move getMove(int,string&&);
+        //move getMove(const pair<int,string>&);
     
         friend std::ostream& operator<< (std::ostream&, const ParserTable&);
 };

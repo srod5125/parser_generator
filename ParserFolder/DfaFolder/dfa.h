@@ -84,7 +84,6 @@ class Dfa {
         bool hasEpsilonProduction(string);
         
         
-        unordered_set<string> first(const string&,unordered_set<string>&);
         unordered_map<string, unordered_set<string> > firstCache;
         
         unordered_map< unordered_set<line,line::hash,line::equal>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
@@ -97,6 +96,8 @@ class Dfa {
         unordered_map<string,symbol> grammar;
         int globalStateNum;
 
+        unordered_set<string> first(const string&,unordered_set<string>&);
+        
         Dfa();
         Dfa(unordered_map<string,symbol>&);
         ~Dfa();

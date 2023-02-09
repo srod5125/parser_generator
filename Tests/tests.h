@@ -16,5 +16,6 @@ void testGoto1();
 void testParserTable();
 void testParser();
 void testAST();
+void testAST2();
 
 #endif

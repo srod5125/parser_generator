@@ -21,31 +21,12 @@ using lineSet = unordered_set<line,line::hash,line::equal>;
 #define LOG(msg) std::cout << msg << std::endl;
 
 // ----------- line ---------
-line::line(int pos,symbol&& sym,unordered_set<string>&& lk){
-    dotPosition = pos;
-    prod = sym;
-    lookahead = lk;
-}
-line::line(int pos,symbol& sym,unordered_set<string>&& lk){
-    dotPosition = pos;
-    prod = sym;
-    lookahead = lk;
-}
-line::line(int pos,symbol& sym,unordered_set<string>& lk){
-    dotPosition = pos;
-    prod = sym;
-    lookahead = lk;
-}
-line::line(int pos,symbol&& sym,unordered_set<string>& lk){
-    dotPosition = pos;
-    prod = sym;
-    lookahead = lk;
-}
-line::line(const line& l,unordered_set<string>& lk){
-    dotPosition = l.dotPosition;
-    prod = l.prod;
-    lookahead = lk;
-}
+line::line(int pos,symbol&& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
+line::line(int pos,symbol& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
+line::line(int pos,symbol& sym,unordered_set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
+line::line(int pos,symbol&& sym,unordered_set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
+line::line(const line& l,unordered_set<string>& lk): dotPosition{l.dotPosition},prod{l.prod},lookahead{lk}{ }
+
 std::size_t line::hash::operator()( const line& l) const{
     std::size_t seed = l.prod.production_rule[0].size();
     std::hash<string> stringHasher;
@@ -146,9 +127,9 @@ std::size_t state::hash::operator()( const state& s) const{
     std::size_t seed = std::hash<int>()(s.stateNum);
     std::hash<string> stringHasher;
     line::hash lineHasher;
-    //acc ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    
     for(const auto& l : s.productions){
-        seed ^= lineHasher(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= lineHasher(l);
     }
     for(const auto& t: s.transitions){
         seed ^= stringHasher(t.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -404,7 +385,7 @@ void Dfa::goToState(state& s){ //TODO: fix
     //if state was already constructed set pointer to that
     //set transition to string -> state
     //std::cin.get();
-
+    LOG("hit")
     unordered_map< string, lineSet > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){

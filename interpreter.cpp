@@ -46,6 +46,8 @@ int main(){
 //https://cs.stackexchange.com/questions/152523/how-is-the-lookahead-for-an-lr1-automaton-computed
 //https://www.geeksforgeeks.org/lalr-parser-with-examples/
 //https://lambda.uta.edu/cse5317/notes/node18.html
+//https://web.stanford.edu/class/archive/cs/cs103/cs103.1156/tools/cfg/
+//https://jsmachines.sourceforge.net/machines/lalr1.html
 
 
 //general outline
