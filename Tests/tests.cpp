@@ -189,7 +189,15 @@ void testGoto1(){
     //unordered_set<line,line::hash,line::equal> x;
     //x.insert(l);
 
-    Dfa d{grammer};
+    
+    unordered_map<string,symbol> grammer4;
+    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    grammer4["+"] = symbol({"+"});
+    grammer4["*"] = symbol({"*"});
+    grammer4["a"] = symbol({"a"});
+    
+
+    Dfa d{grammer4};
     //shared_ptr<state> s{d.closure(x)};
     //LOG(*s)
     //s->rank = status::start;
@@ -273,6 +281,9 @@ void testAST2(){
 
     unordered_map<string,symbol> grammer4;
     grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    grammer4["+"] = symbol({"+"});
+    grammer4["*"] = symbol({"*"});
+    grammer4["a"] = symbol({"a"});
     
 
     Parser p{grammer4};
@@ -286,9 +297,9 @@ void runAllTest(){
     //testFirstDfa();
     //testLexer1();
     //testDfaClosure();
-    //testGoto1();
+    testGoto1();
     //testParserTable();
     //testParser();
     //testAST();
-    testAST2();
+    //testAST2();
 }

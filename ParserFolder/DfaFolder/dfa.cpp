@@ -385,7 +385,7 @@ void Dfa::goToState(state& s){ //TODO: fix
     //if state was already constructed set pointer to that
     //set transition to string -> state
     //std::cin.get();
-    LOG("hit")
+    //LOG("hit1")
     unordered_map< string, lineSet > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){
@@ -406,6 +406,7 @@ void Dfa::goToState(state& s){ //TODO: fix
             lNew.dotPosition+=1;
             incrementedTemp.insert(lNew);
             setOfProds.erase(setIter);
+            //LOG("hit2")
         }
         setOfProds.swap(incrementedTemp);
         //LOG(s.stateNum)
@@ -425,12 +426,15 @@ void Dfa::goToState(state& s){ //TODO: fix
             //hold globally
             initProdSMap[setOfProds] = s.transitions[prodName];
             //recusive call
+            //LOG("hit3")
             goToState(*s.transitions[prodName]);
+            //LOG("hit4")
         }
         else //does contain
         { 
             //defer to that transition
             s.transitions[prodName] = initProdSMap[setOfProds];
+            //LOG("hit5")
         }
         //LOG("<")
     }
@@ -438,7 +442,7 @@ void Dfa::goToState(state& s){ //TODO: fix
     // for(const auto& arrow : toVisit){
     //     goToState(*s.transitions[arrow]);
     // }
-    //LOG(s);
+    LOG(s);
     
 }
 
