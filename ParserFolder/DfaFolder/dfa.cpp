@@ -20,7 +20,7 @@ using lineSet = unordered_set<line,line::hash,line::equal>;
 
 #define LOG(msg) std::cout << msg << std::endl;
 #define CONDLOG(cond,msgTrue,msgFalse) if(cond) {std::cout << msgTrue << std::endl;} else {std::cout << msgFalse << std::endl;}
-#define PRINTSET(set) std::cout << "{"; for(const auto& el:x){ std::cout << el << " "; } std::cout << "}" << std::endl;
+#define PRINTSET(set) std::cout << "{"; for(const auto& el:set){ std::cout << el << " "; } std::cout << "}"; std::cout << std::endl;
 
 // ----------- line ---------
 line::line(int pos,symbol&& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
@@ -74,13 +74,13 @@ std::ostream& operator<< (std::ostream& out, const line& l){
     return out;
 }
 // -------------- state ----------
-state::state() : stateNum{0}, rank{status::intermediate}, productions{}, transitions{} { }
-state::state(int n, line l) : stateNum{0}, rank{status::intermediate}, transitions{} {
+state::state() : stateNum{0}, rank{status::intermediate}, productions{}, transitions{},isAccepting{false} { }
+state::state(int n, line l) : stateNum{0}, rank{status::intermediate}, transitions{},isAccepting{false} {
     stateNum = n;
     productions.insert(l);
 }
 state::state(const lineSet& lSet)
-: stateNum{0}, rank{status::intermediate}, transitions{} {
+: stateNum{0}, rank{status::intermediate}, transitions{},isAccepting{false} {
     productions.insert(lSet.begin(),lSet.end());
 }
 std::ostream& operator<< (std::ostream& out, const state& s){
@@ -88,10 +88,6 @@ std::ostream& operator<< (std::ostream& out, const state& s){
     out << "STATE:" << s.stateNum << "\t";
     switch (s.rank)
     {
-        case status::accept:{
-            out << "ACCEPTING";
-            break;
-        }
         case status::closed:{
             out << "CLOSED";
             break;
@@ -107,6 +103,9 @@ std::ostream& operator<< (std::ostream& out, const state& s){
             
         default:
             break;
+    }
+    if(s.isAccepting){
+        out << " ACCEPTING";
     }
     out << std::endl;
     //print rules with dots
@@ -167,27 +166,27 @@ bool initProdsEqual::operator()(const lineSet& lhs, const lineSet& rhs) const {
 
 // -------------- dfa ----------
 Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, initProdSMap{} {
-    // line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
-    // unordered_set<line,line::hash,line::equal> x;
-    // x.insert(augmentedStart);
-    // startPtr = closure(x);
-    // startPtr->rank = status::start;
-    // startPtr->stateNum = 0;
-    // goToState(*startPtr);
+    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr);
 }
 Dfa::Dfa(unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
     grammar = g;
 
-    // symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
-    // g["S'"] = s0;
+    symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
+    g["S'"] = s0;
 
-    // line augmentedStart = line(0,s0,{"$"});
-    // lineSet x;
-    // x.insert(augmentedStart);
-    // startPtr = closure(x);
-    // startPtr->rank = status::start;
-    // startPtr->stateNum = 0;
-    // goToState(*startPtr);
+    line augmentedStart = line(0,s0,{"$"});
+    lineSet x;
+    x.insert(augmentedStart);
+    startPtr = closure(x);
+    startPtr->rank = status::start;
+    startPtr->stateNum = 0;
+    goToState(*startPtr);
 }
 Dfa::~Dfa() {}
 
@@ -291,7 +290,8 @@ bool Dfa::hasEpsilonProduction(string nonterminal){
 
 
 shared_ptr<state> Dfa::closure(lineSet lSet){
-    
+    LOG("kernel")
+    PRINTSET(lSet)
     //check out early if is size of 1 and closed or accepting
     if(lSet.size()==1){
         shared_ptr<state> s = std::make_shared<state>(lSet);
@@ -299,9 +299,10 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         if(lineSetIter->dotPosition >= lineSetIter->prod.production_rule[0].size()){ // s-> aAb o
             s->rank = status::closed;
             if(lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START"){
-                s->rank = status::accept;
+                s->isAccepting = true;
             }
-            //std::cout << s;
+            LOG(">")
+            LOG(*s)
             return s;
         }
         
@@ -338,7 +339,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
 
     while(!lSet.empty()){
         lineSetIter = lSet.begin();
-        LOG(*lineSetIter);
+        //LOG(*lineSetIter);
 
         //if not closed
         if(lineSetIter->dotPosition < lineSetIter->prod.production_rule[0].size())
@@ -361,7 +362,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                             //LOG("hit")
                         }
                         line newLine{line(0,symbol(currentDotPosString,vector<string>(prods)),x)};
-                        LOG("\t"<<newLine)
+                        //LOG("\t"<<newLine)
                         //introduce new memebers
                         lSet.insert(newLine);
                     }
@@ -375,6 +376,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         {
             //hits here when dot position is beyond production length
             encounteredAcceptCondition = lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START";
+            //CONDLOG(encounteredAcceptCondition,"encounted accept","did not encounter accept")
         }
         //(string,vector<string>) insert new set
         //alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
@@ -393,10 +395,13 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         aux.insert(line(lineNoSet,firstSet));
     }
     shared_ptr<state> sI = std::make_shared<state>(aux);
-    sI->rank = encounteredAcceptCondition ? status::accept : sI->rank;
-    sI->rank = (allClosed && !encounteredAcceptCondition) ? status::closed : status::intermediate;
+    sI->rank = allClosed  ? status::closed : status::intermediate;
+    sI->isAccepting = encounteredAcceptCondition;
     //LOG("hit here")
     //std::cout << sI;
+    LOG(">")
+    LOG(*sI)
+    LOG("--")
     return sI;
 
 }
@@ -406,11 +411,13 @@ void Dfa::goToState(state& s){ //TODO: fix
     //set transition to string -> state
     //std::cin.get();
     //LOG("hit1")
+    //LOG(s)
     unordered_map< string, lineSet > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){
         if(l.dotPosition<l.prod.production_rule[0].size()){
             produtionsAtDotPos[l.prod.production_rule[0][l.dotPosition]].insert(l);
+            //LOG("\t"<<l)
         } 
     }
     
@@ -462,7 +469,7 @@ void Dfa::goToState(state& s){ //TODO: fix
     // for(const auto& arrow : toVisit){
     //     goToState(*s.transitions[arrow]);
     // }
-    LOG(s);
+    //LOG(s);
     
 }
 

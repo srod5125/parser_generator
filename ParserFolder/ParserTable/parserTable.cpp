@@ -75,27 +75,27 @@ bool stateEqual_DiffLk::operator()(const state & lhs, const state & rhs) const{
     struct stringVecHash {
         size_t operator()(const vector<string>& v) const {
             std::hash<string> hasher;
-            size_t seed = 0;
+            size_t seed = v.size();
             for (const auto& i : v) {
                 seed ^= hasher(i) + 0x9e3779b9 + (seed<<6) + (seed>>2);
             }
             return seed;
         }
     };
-    struct stringVecEquals {
-        bool operator()(const vector<string> & v1, const vector<string> & v2) const{
-            bool sameVec = true;
-            if (v1.size()!=v2.size()) {return false;}
-            for(int i=0;i<v1.size() && v2.size();i+=1){
-                sameVec = v1[i] == v2[i];
-                if(!sameVec) {return false;}
-            }
-            return sameVec;
-        }
-    };
+    // struct stringVecEquals {
+    //     bool operator()(const vector<string> & v1, const vector<string> & v2) const{
+    //         bool sameVec = true;
+    //         if (v1.size()!=v2.size()) {return false;}
+    //         for(int i=0;i<v1.size() && v2.size();i+=1){
+    //             sameVec = v1[i] == v2[i];
+    //             if(!sameVec) {return false;}
+    //         }
+    //         return sameVec;
+    //     }
+    // };
 
-    unordered_set<vector<string> , stringVecHash , stringVecEquals> lhs_withoutLk;
-    unordered_set<vector<string> , stringVecHash , stringVecEquals> rhs_withoutLk;
+    unordered_set<vector<string> , stringVecHash > lhs_withoutLk;
+    unordered_set<vector<string> , stringVecHash > rhs_withoutLk;
 
     for(const auto& l: lhs.productions){
         lhs_withoutLk.insert(l.prod.production_rule[0]);
@@ -254,9 +254,9 @@ void ParserTable::fillInTable(){
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
-            switch (curr_state.rank) {
+            //switch (curr_state.rank) {
                 //-------------------------------------
-                case status::closed:{
+                if(curr_state.rank == status::closed){
                     for(const auto& l : curr_state.productions){
                         for(const auto& lk : l.lookahead){
                             actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
@@ -265,16 +265,10 @@ void ParserTable::fillInTable(){
                             //already available
                         }
                     }
-                    break;
+                    //break;
                 }
                 //-------------------------------------
-                case status::accept:{
-                    actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
-                    move(step::accept,-1);
-                    break;
-                }
-                //-------------------------------------
-                default:{
+                else{
                     for(const auto& t: curr_state.transitions){
                         if(d.grammar.at(t.first).isTerminal){
                             actionTable[curr_state.stateNum][actionColumnMap[t.first]] = 
@@ -284,12 +278,16 @@ void ParserTable::fillInTable(){
                             gotoTable[curr_state.stateNum][gotoColumnMap[t.first]] =
                             move(step::none,t.second->stateNum);
                         }
-
+                        //LOG("\tpushing states"<<t.second->stateNum)
                         dfaTrace.push(*t.second);
                     }
-                    break;
+                    //break;
                 }
-            }
+                if(curr_state.isAccepting){
+                    actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
+                    move(step::accept,-1);
+                }
+            //}
             
             visited.insert(curr_state);
         }

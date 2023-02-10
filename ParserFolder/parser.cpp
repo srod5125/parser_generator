@@ -35,7 +35,7 @@ Parser::Parser(unordered_map<string,symbol>& g) : pStack{}, pointer{0}, pT{} {
 
 void Parser::parse(const vector<string>& input){
     //prime
-    pStack.push({0,input[pointer]});
+    pStack.push({0,""});
     move m = pT.getMove(0,input[pointer]);
 
     Ast ast;
@@ -43,6 +43,8 @@ void Parser::parse(const vector<string>& input){
     parallelStack.push(std::make_unique<block>(input[pointer]));
     LOG("first")
     LOG(m.state<<" "<<getStepChar(m.s))
+
+    bool hitNonSRMove = false;
 
     while(!(m.s == step::error || m.s == step::accept)){
         
@@ -82,12 +84,12 @@ void Parser::parse(const vector<string>& input){
             }
             else{ 
                 LOG("hit default")
-                m.s = step::error;
+                hitNonSRMove = true;
                 break;
             }
         
         //m = pT.getMove(pStack.top());
-        m = pT.getMove(pStack.top().first,input[pointer]);
+        m = hitNonSRMove ? move() : pT.getMove(pStack.top().first,input[pointer]);
         
         LOG("move")
         LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])

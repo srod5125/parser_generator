@@ -43,7 +43,6 @@ struct line {
     friend std::ostream& operator<< (std::ostream&, const line&);
 };
 enum class status : char{
-    accept,
     closed,
     intermediate,
     start
@@ -52,8 +51,10 @@ enum class status : char{
 struct state{
     unordered_set<line,line::hash,line::equal> productions;
     unordered_map<string, shared_ptr<state> > transitions; //one way pointer to new state
+    //TODO: make transitions regular set
     int stateNum;
     status rank;
+    bool isAccepting;
 
     state();
     state(int,line);

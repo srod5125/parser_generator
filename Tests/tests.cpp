@@ -25,7 +25,7 @@ using std::shared_ptr;
 
 #define LOG(msg) std::cout << msg << std::endl;
 #define CONDLOG(cond,msgTrue,msgFalse) if(cond) {std::cout << msgTrue << std::endl;} else {std::cout << msgFalse << std::endl;}
-#define PRINTSET(set) std::cout << "{"; for(const auto& el:x){ std::cout << el << " "; } std::cout << "}" << std::endl;
+#define PRINTSET(set) std::cout << "{"; for(const auto& el:set){ std::cout << el << " "; } std::cout << "}" << std::endl;
 
 using vecOfVec = vector<vector<string>>;
 
@@ -258,26 +258,26 @@ void testAST(){
     //void parse(vector<string>&&);
 
     Parser p{grammer};
-    vector<string> input = {"a","a","b","b","$"}; //append end
+    vector<string> input = {"a","a","b","b","$"}; //append end //accepted grammar
     p.parse(input);
 }
 
 void testAST2(){
-    // unordered_map<string,symbol> grammer;
-    // grammer["S"] = symbol("S",{"E"});
-    // grammer["E"] = symbol("E",vecOfVec{{"(","E",")"},{"N","O","E"},{"N"}});
-    // grammer["N"] = symbol("N",vecOfVec{{"1"},{"2"},{"3"}});
-    // grammer["O"] = symbol("O",vecOfVec{{"+"},{"-"}});
-    // grammer["("] = symbol({"("});
-    // grammer[")"] = symbol({")"});
-    // grammer["+"] = symbol({"+"});
-    // grammer["-"] = symbol({"-"});
-    // //grammer["/"] = symbol({"/"});
-    // //grammer["*"] = symbol({"*"});
-    // grammer["1"] = symbol({"1"});
-    // grammer["2"] = symbol({"2"});
-    // grammer["3"] = symbol({"3"});
-    // grammer["$"] = symbol({"$"});
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",{"E"});
+    grammer["E"] = symbol("E",vecOfVec{{"(","E",")"},{"N","O","E"},{"N"}});
+    grammer["N"] = symbol("N",vecOfVec{{"1"},{"2"},{"3"}});
+    grammer["O"] = symbol("O",vecOfVec{{"+"},{"-"}});
+    grammer["("] = symbol({"("});
+    grammer[")"] = symbol({")"});
+    grammer["+"] = symbol({"+"});
+    grammer["-"] = symbol({"-"});
+    //grammer["/"] = symbol({"/"});
+    //grammer["*"] = symbol({"*"});
+    grammer["1"] = symbol({"1"});
+    grammer["2"] = symbol({"2"});
+    grammer["3"] = symbol({"3"});
+    grammer["$"] = symbol({"$"});
     //void parse(vector<string>&&);
 
     // unordered_map<string,symbol> grammer3;
@@ -292,27 +292,27 @@ void testAST2(){
     // grammer3[")"] = symbol({")"});
     // grammer3["$"] = symbol({"$"});
 
-    unordered_map<string,symbol> grammer4;
-    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
-    grammer4["+"] = symbol({"+"});
-    grammer4["*"] = symbol({"*"});
-    grammer4["a"] = symbol({"a"});
+    // unordered_map<string,symbol> grammer4;
+    // grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    // grammer4["+"] = symbol({"+"});
+    // grammer4["*"] = symbol({"*"});
+    // grammer4["a"] = symbol({"a"});
     
 
-    Parser p{grammer4};
-    vector<string> input = {"a","a","+","$"};
+    Parser p{grammer};
+    //vector<string> input = {"a","a","+","$"}; //accepted grammar4
     //vector<string> input = {"id","*","id","+","id","$"}; //append end
-    //vector<string> input = {"1","+","1","$"};
+    vector<string> input = {"1","$"};
     p.parse(input);
 }
 
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
-    testDfaClosure();
+    //testDfaClosure();
     //testGoto1();
     //testParserTable();
     //testParser();
     //testAST();
-    //testAST2();
+    testAST2();
 }
