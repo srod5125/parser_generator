@@ -24,6 +24,8 @@ using std::shared_ptr;
 
 
 #define LOG(msg) std::cout << msg << std::endl;
+#define CONDLOG(cond,msgTrue,msgFalse) if(cond) {std::cout << msgTrue << std::endl;} else {std::cout << msgFalse << std::endl;}
+#define PRINTSET(set) std::cout << "{"; for(const auto& el:x){ std::cout << el << " "; } std::cout << "}" << std::endl;
 
 using vecOfVec = vector<vector<string>>;
 
@@ -100,17 +102,19 @@ void testFirstDfa(){
     grammer["+"] = symbol({"+"});
     grammer["-"] = symbol({"-"});
 
-    Dfa d{grammer};
+    unordered_map<string,symbol> grammer4;
+    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    grammer4["+"] = symbol({"+"});
+    grammer4["*"] = symbol({"*"});
+    grammer4["a"] = symbol({"a"});
+
+    Dfa d{grammer4};
     unordered_set<string> helper{};
-    string t = "O";
+    string t = "S";
+    //LOG(grammer4["S"])
     unordered_set<string> x = d.first(t,helper); //make public to test
     //LOG(t)
-    std::cout << "{";
-    for(const auto& el:x){
-        std::cout << el << " ";
-    }
-    std::cout << "}";
-    LOG("")
+    PRINTSET(x);
 }
 
 void testDfaClosure(){
@@ -143,14 +147,23 @@ void testDfaClosure(){
     // grammer3["("] = symbol({"("});
     // grammer3[")"] = symbol({")"});
 
+    
+    unordered_map<string,symbol> grammer4;
+    grammer4["S'"] = symbol("S'",{"S"});
+    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    grammer4["+"] = symbol({"+"});
+    grammer4["*"] = symbol({"*"});
+    grammer4["a"] = symbol({"a"});
+
+
     //line l{1,grammer["A"],{"a","b"}};
     line l{0,grammer["S'"],{"$"}};
     unordered_set<line,line::hash,line::equal> x;
     x.insert(l);
     //state s = state(0,l);
     Dfa d{grammer};
-    //shared_ptr<state> s{d.closure(x)}; //make public to call
-    //LOG(*s)
+    shared_ptr<state> s{d.closure(x)}; //make public to call
+    LOG(*s)
 }
 
 void testGoto1(){
@@ -296,8 +309,8 @@ void testAST2(){
 void runAllTest(){
     //testFirstDfa();
     //testLexer1();
-    //testDfaClosure();
-    testGoto1();
+    testDfaClosure();
+    //testGoto1();
     //testParserTable();
     //testParser();
     //testAST();

@@ -19,6 +19,8 @@ using std::stack;
 using lineSet = unordered_set<line,line::hash,line::equal>;
 
 #define LOG(msg) std::cout << msg << std::endl;
+#define CONDLOG(cond,msgTrue,msgFalse) if(cond) {std::cout << msgTrue << std::endl;} else {std::cout << msgFalse << std::endl;}
+#define PRINTSET(set) std::cout << "{"; for(const auto& el:x){ std::cout << el << " "; } std::cout << "}" << std::endl;
 
 // ----------- line ---------
 line::line(int pos,symbol&& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
@@ -55,12 +57,12 @@ std::ostream& operator<< (std::ostream& out, const line& l){
     out << l.prod.name << " -> ";
     for(int i=0;i<l.prod.production_rule[0].size();i+=1){
         if(i==l.dotPosition){
-            out << "o";
+            out << ".";
         }
         out << l.prod.production_rule[0][i];
     }
     if(l.prod.production_rule[0].size()==l.dotPosition){
-        out << "o";
+        out << ".";
     }
     //print look ahead
     out << " {";
@@ -165,27 +167,27 @@ bool initProdsEqual::operator()(const lineSet& lhs, const lineSet& rhs) const {
 
 // -------------- dfa ----------
 Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, initProdSMap{} {
-    line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
-    unordered_set<line,line::hash,line::equal> x;
-    x.insert(augmentedStart);
-    startPtr = closure(x);
-    startPtr->rank = status::start;
-    startPtr->stateNum = 0;
-    goToState(*startPtr);
+    // line augmentedStart = line(0,symbol("S'",{"S"}),{"$"}); // line augmentedStart = line(0,symbol("S'",{"start"}),{"$"}); 
+    // unordered_set<line,line::hash,line::equal> x;
+    // x.insert(augmentedStart);
+    // startPtr = closure(x);
+    // startPtr->rank = status::start;
+    // startPtr->stateNum = 0;
+    // goToState(*startPtr);
 }
 Dfa::Dfa(unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, initProdSMap{}  {
     grammar = g;
 
-    symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
-    g["S'"] = s0;
+    // symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
+    // g["S'"] = s0;
 
-    line augmentedStart = line(0,s0,{"$"});
-    lineSet x;
-    x.insert(augmentedStart);
-    startPtr = closure(x);
-    startPtr->rank = status::start;
-    startPtr->stateNum = 0;
-    goToState(*startPtr);
+    // line augmentedStart = line(0,s0,{"$"});
+    // lineSet x;
+    // x.insert(augmentedStart);
+    // startPtr = closure(x);
+    // startPtr->rank = status::start;
+    // startPtr->stateNum = 0;
+    // goToState(*startPtr);
 }
 Dfa::~Dfa() {}
 
@@ -198,57 +200,80 @@ Dfa::~Dfa() {}
 // }
 
 unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
-    //LOG("-"<<sym)
+    //std::cin.get();
     if(firstCache.find(sym) != firstCache.end()){
+        //LOG("hit 1")
+        alreadySeen.insert(sym);
         return firstCache[sym];
     }
-    if(grammar[sym].isTerminal){ //handles null case
-        unordered_set<string> x{sym};
-        return x;
-    }
-    else {
-        if(alreadySeen.find(sym)==alreadySeen.end()){
-            alreadySeen.insert(sym);
-            
-            unordered_set<string> x;
-            for(const auto& seq : grammar[sym].production_rule){
-                if(!seq.empty()){
-                    if(grammar[seq[0]].isTerminal){
-                        x.insert(seq[0]);
-                    }
-                    else{
+    else{
+        if(grammar[sym].isTerminal){ //handles null case
+            //LOG(grammar[sym])
+            //LOG("hit 2")
+            return {sym};
+        }
+        else {
+            //CONDLOG(alreadySeen.find(sym)==alreadySeen.end(),"not in","in")
+                // std::cout << "{";
+                // for(const auto& el:firstCache[sym]){
+                //     std::cout << el << " ";
+                // }
+                // std::cout << "}";
 
-                        if(!hasEpsilonProduction(seq[0])){
-                            unordered_set<string> tmp = first(seq[0],alreadySeen);
-                            x.insert(tmp.begin(),tmp.end());
+            if(alreadySeen.find(sym)==alreadySeen.end()){
+                alreadySeen.insert(sym);
+                //LOG(sym)
+                unordered_set<string> x;
+                for(const auto& seq : grammar[sym].production_rule){
+                    //LOG("hit 3")
+                    if(!seq.empty()){
+                        if(grammar[seq[0]].isTerminal){
+                            x.insert(seq[0]);
                         }
-                        else {
-                            unordered_set<string> tmp = first(seq[0],alreadySeen);
-                            tmp.erase("EMPTY");
-                            x.insert(tmp.begin(),tmp.end());
+                        else{
 
-                            for(int i=1;i<seq.size();i+=1){
-                                //LOG(seq[i])
-                                if(grammar[seq[i]].isTerminal){
-                                    x.insert(seq[i]);
-                                    break;
-                                }
-                                else{
-                                    //LOG("hit "<<seq[i])
-                                    unordered_set<string> tmp = first(seq[i],alreadySeen);
-                                    x.insert(tmp.begin(),tmp.end());
+                            if(!hasEpsilonProduction(seq[0])){
+                                //LOG("hit 4")
+                                unordered_set<string> tmp = first(seq[0],alreadySeen);
+                                //LOG("hit 4 return")
+                                x.insert(tmp.begin(),tmp.end());
+                            }
+                            else {
+                                //LOG("hit 5")
+                                unordered_set<string> tmp = first(seq[0],alreadySeen);
+                                //LOG("hit 5 return")
+                                tmp.erase("EMPTY");
+                                x.insert(tmp.begin(),tmp.end());
+
+                                for(int i=1;i<seq.size();i+=1){
+                                    //LOG(seq[i])
+                                    if(grammar[seq[i]].isTerminal){
+                                        x.insert(seq[i]);
+                                        break;
+                                    }
+                                    else{
+                                        //LOG("hit "<<seq[i])
+                                        //LOG("hit 6")
+                                        unordered_set<string> tmp = first(seq[i],alreadySeen);
+                                        //LOG("hit 6 return")
+                                        x.insert(tmp.begin(),tmp.end());
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                //LOG("hit 7")
+                firstCache[sym] = x;
+                //PRINTSET(firstCache[sym])
+                return x;
             }
-            firstCache[sym] = x;
-            return x;
+            //LOG("hit 8")
+            return {};
         }
-
-        return {};
     }
+    //LOG("hit 9")
+    return {};
 }
 
 bool Dfa::hasEpsilonProduction(string nonterminal){
@@ -257,19 +282,14 @@ bool Dfa::hasEpsilonProduction(string nonterminal){
         if(!i.empty()){
             if(i.size()==1 && i[0]=="EMPTY"){
                 hasEpsilonProduction=true;
+                break;
             }
         }
     }
     return hasEpsilonProduction;
 }
-template <typename T>
-static void printSet(const unordered_set<T>& x){
-    std::cout << "{ ";
-    for(const auto& el: x){
-        std::cout << el << " ";
-    }
-    std::cout << " }" << std::endl;
-}
+
+
 shared_ptr<state> Dfa::closure(lineSet lSet){
     
     //check out early if is size of 1 and closed or accepting
@@ -287,8 +307,6 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         
     }
     
-
-
     struct lineNoSetHash {
         size_t operator()(const line& l) const {
             std::size_t seed = l.prod.production_rule[0].size();
@@ -299,6 +317,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                 seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
             //note we do not hash the set
+            //LOG(l << seed)
             return seed;
         }
     };
@@ -319,7 +338,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
 
     while(!lSet.empty()){
         lineSetIter = lSet.begin();
-        //LOG(*lineSetIter);
+        LOG(*lineSetIter);
 
         //if not closed
         if(lineSetIter->dotPosition < lineSetIter->prod.production_rule[0].size())
@@ -328,7 +347,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
             
             if(!grammar[currentDotPosString].isTerminal){
                 //check if production has already been added at this dotposition
-                //if(alreadySeen.find( {currentDotPosString,lineSetIter->dotPosition} ) == alreadySeen.end()){ //not present
+                if(alreadySeen.find( *lineSetIter ) == alreadySeen.end()){ //not present
 
                     for(const auto& prods: grammar[currentDotPosString].production_rule){
                         //get lookahead
@@ -341,12 +360,14 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                             //printSet(x);
                             //LOG("hit")
                         }
-                        line newLine = line(0,symbol(currentDotPosString,vector<string>(prods)),x);
+                        line newLine{line(0,symbol(currentDotPosString,vector<string>(prods)),x)};
+                        LOG("\t"<<newLine)
                         //introduce new memebers
                         lSet.insert(newLine);
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
-                //}
+                    
+                }
             }
             allClosed = false;
         }
@@ -356,11 +377,12 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
             encounteredAcceptCondition = lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START";
         }
         //(string,vector<string>) insert new set
-        alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
+        //alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
         //LOG(*lineSetIter)
         //printSet(alreadySeen[*lineSetIter]);
         //LOG("--")
         //delete current memeber
+        alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
         lSet.erase(lineSetIter);
 
     }
@@ -368,9 +390,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     lineSet aux{};
     //pump into new states
     for(auto& [lineNoSet, firstSet]: alreadySeen){
-        line l = line(lineNoSet,firstSet);
-        //LOG(l);
-        aux.insert(l);
+        aux.insert(line(lineNoSet,firstSet));
     }
     shared_ptr<state> sI = std::make_shared<state>(aux);
     sI->rank = encounteredAcceptCondition ? status::accept : sI->rank;
