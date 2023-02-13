@@ -278,6 +278,16 @@ void testAST2(){
     grammer["2"] = symbol({"2"});
     grammer["3"] = symbol({"3"});
     grammer["$"] = symbol({"$"});
+
+    // S -> E
+    // E -> ( E )
+    // E -> N O E
+    // E -> N
+    // N -> 1
+    // N -> 2
+    // N -> 3
+    // O -> +
+    // O -> -
     //void parse(vector<string>&&);
 
     // unordered_map<string,symbol> grammer3;

@@ -261,8 +261,6 @@ void ParserTable::fillInTable(){
                         for(const auto& lk : l.lookahead){
                             actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
                             move(step::reduce,l.prod.production_rule[0].size(),l.prod.name);//add nontmerinal to reduc instruction
-                            //size in subsitute for canonical item number
-                            //already available
                         }
                     }
                     //break;

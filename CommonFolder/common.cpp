@@ -85,11 +85,11 @@ bool symbol::operator==(const symbol& rhs) const{
 }
 
 
-template <typename T>
-void printSet(const unordered_set<T>& x){
-    std::cout << "{ ";
-    for(const auto& el: x){
-        std::cout << el << " ";
-    }
-    std::cout << " }" << std::endl;
-}
+// template <typename T>
+// void printSet(const unordered_set<T>& x){
+//     std::cout << "{ ";
+//     for(const auto& el: x){
+//         std::cout << el << " ";
+//     }
+//     std::cout << " }" << std::endl;
+// }

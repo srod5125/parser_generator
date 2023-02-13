@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
 #include <vector>
 #include <memory>
 #include <string>
@@ -16,10 +17,11 @@ using std::vector;
 using std::unique_ptr;
 using std::shared_ptr;
 using std::string;
+using std::map;
 
 
 //dot position, production list, lookahead set
-struct line {
+struct line {//TODO: make prod one vector, 
     int dotPosition;
     symbol prod; // s-> ABB
     unordered_set<string> lookahead;
@@ -50,7 +52,7 @@ enum class status : char{
 //list of lines, list of transitions
 struct state{
     unordered_set<line,line::hash,line::equal> productions;
-    unordered_map<string, shared_ptr<state> > transitions; //one way pointer to new state
+    map<string, shared_ptr<state> > transitions; //one way pointer to new state
     //TODO: make transitions regular set
     int stateNum;
     status rank;
@@ -74,10 +76,10 @@ struct state{
     friend std::ostream& operator<< (std::ostream&, const state&);
 };
 
-struct initProdsHash {
+struct coreHash {
     std::size_t operator()(const unordered_set<line,line::hash,line::equal>&) const;
 };
-struct initProdsEqual {
+struct coreEqual {
     bool operator()(const unordered_set<line,line::hash,line::equal>&,const unordered_set<line,line::hash,line::equal>&) const;
 };
 class Dfa {
@@ -87,7 +89,7 @@ class Dfa {
         
         unordered_map<string, unordered_set<string> > firstCache;
         
-        unordered_map< unordered_set<line,line::hash,line::equal>, shared_ptr<state>, initProdsHash, initProdsEqual> initProdSMap;
+        unordered_map< unordered_set<line,line::hash,line::equal>, shared_ptr<state>, coreHash, coreEqual> initProdSMap;
         
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 

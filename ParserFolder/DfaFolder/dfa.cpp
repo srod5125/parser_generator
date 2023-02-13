@@ -38,19 +38,19 @@ std::size_t line::hash::operator()( const line& l) const{
     for(const auto& el: l.prod.production_rule[0]){
         seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
-    for(const auto& el: l.lookahead){
-        seed ^= stringHasher(el); //bruh
-    }
+    // for(const auto& el: l.lookahead){
+    //     seed ^= stringHasher(el); //bruh
+    // }
     return seed;
 }
 bool line::equal::operator()(const line& lhs,const line& rhs) const{
     if(!(lhs.prod == rhs.prod)) {return false;}
-    if(lhs.lookahead != rhs.lookahead) {return false;}
+    //if(lhs.lookahead != rhs.lookahead) {return false;}
     return true;
 }
 bool line::operator==(const line& rhs) const{
     if(!(this->prod == rhs.prod)) {return false;}
-    if(this->lookahead != rhs.lookahead) {return false;}
+    //if(this->lookahead != rhs.lookahead) {return false;}
     return true;
 }
 std::ostream& operator<< (std::ostream& out, const line& l){
@@ -135,11 +135,14 @@ std::size_t state::hash::operator()( const state& s) const{
     for(const auto& t: s.transitions){
         seed ^= stringHasher(t.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
-    seed ^=  std::hash<char>()(static_cast<char>(s.rank)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^=  std::hash<int>()(static_cast<int>(s.rank)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     return seed;
 }
 bool state::equal::operator()(const state& lhs,const state& rhs) const{
-    return lhs.stateNum == rhs.stateNum; //lazy equality, statemun is unique
+    return lhs.stateNum == rhs.stateNum &&
+             lhs.rank == rhs.rank &&
+             lhs.isAccepting == rhs.isAccepting &&
+             lhs.productions == rhs.productions;
 }
 bool state::operator==(const state& rhs) const{
     if(this->stateNum != rhs.stateNum) {return false;}
@@ -149,18 +152,18 @@ bool state::operator==(const state& rhs) const{
 }
 //-------------- helpers -------
 
-std::size_t initProdsHash::operator()(const lineSet & lSet) const
+std::size_t coreHash::operator()(const lineSet & lSet) const
 {
     std::size_t seed = lSet.size();
     line::hash lineHahser;
     for(const auto& l: lSet){
         //std::cout << l << "\t here" << std::endl;
-        seed ^= lineHahser(l) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= lineHahser(l); // + 0x9e3779b9 + (seed << 6) + (seed >> 2)
     }
     return seed;
 }
 
-bool initProdsEqual::operator()(const lineSet& lhs, const lineSet& rhs) const {
+bool coreEqual::operator()(const lineSet& lhs, const lineSet& rhs) const {
     return lhs == rhs;
 }
 
@@ -461,7 +464,12 @@ void Dfa::goToState(state& s){ //TODO: fix
         { 
             //defer to that transition
             s.transitions[prodName] = initProdSMap[setOfProds];
-            //LOG("hit5")
+            // keep track of lookaheads
+            // if same leave as is
+            // else
+            // reconstruct state and replace with existing state
+            // give state function that holds initial kernel and merges with
+            // new set of kernels
         }
         //LOG("<")
     }
