@@ -23,11 +23,11 @@ using lineSet = unordered_set<line,line::hash,line::equal>;
 #define PRINTSET(set) std::cout << "{"; for(const auto& el:set){ std::cout << el << " "; } std::cout << "}"; std::cout << std::endl;
 
 // ----------- line ---------
-line::line(int pos,symbol&& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
-line::line(int pos,symbol& sym,unordered_set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
-line::line(int pos,symbol& sym,unordered_set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
-line::line(int pos,symbol&& sym,unordered_set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
-line::line(const line& l,unordered_set<string>& lk): dotPosition{l.dotPosition},prod{l.prod},lookahead{lk}{ }
+line::line(int pos,symbol&& sym,set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
+line::line(int pos,symbol& sym,set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
+line::line(int pos,symbol& sym,set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
+line::line(int pos,symbol&& sym,set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
+line::line(const line& l,set<string>& lk): dotPosition{l.dotPosition},prod{l.prod},lookahead{lk}{ }
 
 std::size_t line::hash::operator()( const line& l) const{
     std::size_t seed = l.prod.production_rule[0].size();
@@ -201,7 +201,7 @@ Dfa::~Dfa() {}
 //     LOG("")
 // }
 
-unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alreadySeen){
+set<string> Dfa::first(const string& sym,set<string>& alreadySeen){
     //std::cin.get();
     if(firstCache.find(sym) != firstCache.end()){
         //LOG("hit 1")
@@ -225,7 +225,7 @@ unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alread
             if(alreadySeen.find(sym)==alreadySeen.end()){
                 alreadySeen.insert(sym);
                 //LOG(sym)
-                unordered_set<string> x;
+                set<string> x;
                 for(const auto& seq : grammar[sym].production_rule){
                     //LOG("hit 3")
                     if(!seq.empty()){
@@ -236,13 +236,13 @@ unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alread
 
                             if(!hasEpsilonProduction(seq[0])){
                                 //LOG("hit 4")
-                                unordered_set<string> tmp = first(seq[0],alreadySeen);
+                                set<string> tmp = first(seq[0],alreadySeen);
                                 //LOG("hit 4 return")
                                 x.insert(tmp.begin(),tmp.end());
                             }
                             else {
                                 //LOG("hit 5")
-                                unordered_set<string> tmp = first(seq[0],alreadySeen);
+                                set<string> tmp = first(seq[0],alreadySeen);
                                 //LOG("hit 5 return")
                                 tmp.erase("EMPTY");
                                 x.insert(tmp.begin(),tmp.end());
@@ -256,7 +256,7 @@ unordered_set<string> Dfa::first(const string& sym,unordered_set<string>& alread
                                     else{
                                         //LOG("hit "<<seq[i])
                                         //LOG("hit 6")
-                                        unordered_set<string> tmp = first(seq[i],alreadySeen);
+                                        set<string> tmp = first(seq[i],alreadySeen);
                                         //LOG("hit 6 return")
                                         x.insert(tmp.begin(),tmp.end());
                                     }
@@ -333,7 +333,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
             return true;
          }
     };
-    unordered_map<line,unordered_set<string>,lineNoSetHash,lineNoSetEqual> alreadySeen;//a line map
+    unordered_map<line,set<string>,lineNoSetHash,lineNoSetEqual> alreadySeen;//a line map
     //map between string+vector : set
 
     auto lineSetIter{lSet.begin()};
@@ -355,11 +355,11 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
 
                     for(const auto& prods: grammar[currentDotPosString].production_rule){
                         //get lookahead
-                        unordered_set<string> x = lineSetIter->lookahead;
+                        set<string> x = lineSetIter->lookahead;
                         //LOG(lineSetIter->dotPosition+1)
                         //LOG("\t"<<lineSetIter->prod.production_rule[0].size())
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
-                            unordered_set<string> firstHelper{};
+                            set<string> firstHelper{};
                             x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1],firstHelper);
                             //printSet(x);
                             //LOG("hit")

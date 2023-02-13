@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 #include <map>
 #include <vector>
 #include <memory>
@@ -13,6 +14,7 @@
 
 using std::unordered_map;
 using std::unordered_set;
+using std::set;
 using std::vector;
 using std::unique_ptr;
 using std::shared_ptr;
@@ -21,16 +23,16 @@ using std::map;
 
 
 //dot position, production list, lookahead set
-struct line {//TODO: make prod one vector, 
+struct line {
     int dotPosition;
     symbol prod; // s-> ABB
-    unordered_set<string> lookahead;
+    set<string> lookahead;
 
-    line(int,symbol&&,unordered_set<string>&&);
-    line(int,symbol&,unordered_set<string>&&);
-    line(int,symbol&,unordered_set<string>&);
-    line(int,symbol&&,unordered_set<string>&);
-    line(const line&,unordered_set<string>&);
+    line(int,symbol&&,set<string>&&);
+    line(int,symbol&,set<string>&&);
+    line(int,symbol&,set<string>&);
+    line(int,symbol&&,set<string>&);
+    line(const line&,set<string>&);
 
     bool operator==(const line&) const;
     struct hash
@@ -87,7 +89,7 @@ class Dfa {
         bool hasEpsilonProduction(string);
         
         
-        unordered_map<string, unordered_set<string> > firstCache;
+        unordered_map<string, set<string> > firstCache;
         
         unordered_map< unordered_set<line,line::hash,line::equal>, shared_ptr<state>, coreHash, coreEqual> initProdSMap;
         
@@ -99,7 +101,7 @@ class Dfa {
         int globalStateNum;
 
         shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
-        unordered_set<string> first(const string&,unordered_set<string>&);
+        set<string> first(const string&,set<string>&);
         
         Dfa();
         Dfa(unordered_map<string,symbol>&);

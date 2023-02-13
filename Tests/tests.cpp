@@ -109,10 +109,10 @@ void testFirstDfa(){
     grammer4["a"] = symbol({"a"});
 
     Dfa d{grammer4};
-    unordered_set<string> helper{};
+    set<string> helper{};
     string t = "S";
     //LOG(grammer4["S"])
-    unordered_set<string> x = d.first(t,helper); //make public to test
+    set<string> x = d.first(t,helper); //make public to test
     //LOG(t)
     PRINTSET(x);
 }
