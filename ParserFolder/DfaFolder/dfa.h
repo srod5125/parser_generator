@@ -25,7 +25,8 @@ using std::map;
 //dot position, production list, lookahead set
 struct line {
     int dotPosition;
-    symbol prod; // s-> ABB
+    string name;
+    vector<string> prod;
     set<string> lookahead;
 
     line(int,symbol&&,set<string>&&);

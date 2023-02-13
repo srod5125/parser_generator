@@ -23,19 +23,19 @@ using lineSet = unordered_set<line,line::hash,line::equal>;
 #define PRINTSET(set) std::cout << "{"; for(const auto& el:set){ std::cout << el << " "; } std::cout << "}"; std::cout << std::endl;
 
 // ----------- line ---------
-line::line(int pos,symbol&& sym,set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
-line::line(int pos,symbol& sym,set<string>&& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
-line::line(int pos,symbol& sym,set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk} { }
-line::line(int pos,symbol&& sym,set<string>& lk): dotPosition{pos},prod{sym},lookahead{lk}{ }
-line::line(const line& l,set<string>& lk): dotPosition{l.dotPosition},prod{l.prod},lookahead{lk}{ }
+line::line(int pos,symbol&& sym,set<string>&& lk): dotPosition{pos},prod{sym.production_rule[0]},name{sym.name},lookahead{lk}{ }
+line::line(int pos,symbol& sym,set<string>&& lk): dotPosition{pos},prod{sym.production_rule[0]},name{sym.name},lookahead{lk} { }
+line::line(int pos,symbol& sym,set<string>& lk): dotPosition{pos},prod{sym.production_rule[0]},name{sym.name},lookahead{lk} { }
+line::line(int pos,symbol&& sym,set<string>& lk): dotPosition{pos},prod{sym.production_rule[0]},name{sym.name},lookahead{lk}{ }
+line::line(const line& l,set<string>& lk): dotPosition{l.dotPosition},prod{l.prod},lookahead{lk},name{l.name}{ }
 
 std::size_t line::hash::operator()( const line& l) const{
-    std::size_t seed = l.prod.production_rule[0].size();
+    std::size_t seed = l.prod.size();
     std::hash<string> stringHasher;
-    seed ^= stringHasher(l.prod.name) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= stringHasher(l.name) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     seed ^= std::hash<int>()(l.dotPosition) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<bool>()(l.prod.isTerminal) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    for(const auto& el: l.prod.production_rule[0]){
+    //seed ^= std::hash<bool>()(l.prod.isTerminal) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    for(const auto& el: l.prod){
         seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     // for(const auto& el: l.lookahead){
@@ -54,14 +54,14 @@ bool line::operator==(const line& rhs) const{
     return true;
 }
 std::ostream& operator<< (std::ostream& out, const line& l){
-    out << l.prod.name << " -> ";
-    for(int i=0;i<l.prod.production_rule[0].size();i+=1){
+    out << l.name << " -> ";
+    for(int i=0;i<l.prod.size();i+=1){
         if(i==l.dotPosition){
             out << ".";
         }
-        out << l.prod.production_rule[0][i];
+        out << l.prod[i];
     }
-    if(l.prod.production_rule[0].size()==l.dotPosition){
+    if(l.prod.size()==l.dotPosition){
         out << ".";
     }
     //print look ahead
@@ -299,9 +299,9 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     if(lSet.size()==1){
         shared_ptr<state> s = std::make_shared<state>(lSet);
         auto lineSetIter = lSet.begin();
-        if(lineSetIter->dotPosition >= lineSetIter->prod.production_rule[0].size()){ // s-> aAb o
+        if(lineSetIter->dotPosition >= lineSetIter->prod.size()){ // s-> aAb o
             s->rank = status::closed;
-            if(lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START"){
+            if(lineSetIter->name == "S'" || lineSetIter->name=="AUGMENTED_START"){
                 s->isAccepting = true;
             }
             LOG(">")
@@ -313,11 +313,11 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     
     struct lineNoSetHash {
         size_t operator()(const line& l) const {
-            std::size_t seed = l.prod.production_rule[0].size();
+            std::size_t seed = l.prod.size();
             std::hash<string> stringHasher;
-            seed ^= stringHasher(l.prod.name);
+            seed ^= stringHasher(l.name);
             seed ^= l.dotPosition + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            for(const auto& el: l.prod.production_rule[0]){
+            for(const auto& el: l.prod){
                 seed ^= stringHasher(el) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
             //note we do not hash the set
@@ -327,9 +327,9 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     };
     struct lineNoSetEqual {
         bool operator() (const line& lhs, const line& rhs) const { 
-            if(lhs.prod.name != rhs.prod.name) {return false;}
-            if(lhs.prod.production_rule[0].size() != rhs.prod.production_rule[0].size()) {return false;}
-            if(lhs.prod.production_rule[0] != rhs.prod.production_rule[0]) {return false;}
+            if(lhs.prod != rhs.prod) {return false;}
+            if(lhs.prod.size() != rhs.prod.size()) {return false;}
+            if(lhs.prod != rhs.prod) {return false;}
             return true;
          }
     };
@@ -345,9 +345,9 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         //LOG(*lineSetIter);
 
         //if not closed
-        if(lineSetIter->dotPosition < lineSetIter->prod.production_rule[0].size())
+        if(lineSetIter->dotPosition < lineSetIter->prod.size())
         {
-            string currentDotPosString{lineSetIter->prod.production_rule[0][lineSetIter->dotPosition]};
+            string currentDotPosString{lineSetIter->prod[lineSetIter->dotPosition]};
             
             if(!grammar[currentDotPosString].isTerminal){
                 //check if production has already been added at this dotposition
@@ -358,9 +358,9 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                         set<string> x = lineSetIter->lookahead;
                         //LOG(lineSetIter->dotPosition+1)
                         //LOG("\t"<<lineSetIter->prod.production_rule[0].size())
-                        if(lineSetIter->dotPosition+1 < lineSetIter->prod.production_rule[0].size()){
+                        if(lineSetIter->dotPosition+1 < lineSetIter->prod.size()){
                             set<string> firstHelper{};
-                            x = first(lineSetIter->prod.production_rule[0][lineSetIter->dotPosition+1],firstHelper);
+                            x = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
                             //printSet(x);
                             //LOG("hit")
                         }
@@ -378,7 +378,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         else
         {
             //hits here when dot position is beyond production length
-            encounteredAcceptCondition = lineSetIter->prod.name == "S'" || lineSetIter->prod.name=="AUGMENTED_START";
+            encounteredAcceptCondition = lineSetIter->name == "S'" || lineSetIter->name=="AUGMENTED_START";
             //CONDLOG(encounteredAcceptCondition,"encounted accept","did not encounter accept")
         }
         //(string,vector<string>) insert new set
@@ -418,8 +418,8 @@ void Dfa::goToState(state& s){ //TODO: fix
     unordered_map< string, lineSet > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){
-        if(l.dotPosition<l.prod.production_rule[0].size()){
-            produtionsAtDotPos[l.prod.production_rule[0][l.dotPosition]].insert(l);
+        if(l.dotPosition<l.prod.size()){
+            produtionsAtDotPos[l.prod[l.dotPosition]].insert(l);
             //LOG("\t"<<l)
         } 
     }

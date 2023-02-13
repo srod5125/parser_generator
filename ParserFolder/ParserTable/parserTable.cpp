@@ -58,8 +58,8 @@ std::size_t stateHash_DiffLk::operator()(const state& s) const{
     
     for(const auto& l : s.productions){
         seed ^= intHasher(l.dotPosition);
-        seed ^= boolHasher(l.prod.isTerminal);
-        for(const auto& p: l.prod.production_rule[0]){
+        //seed ^= boolHasher(l.prod.isTerminal);
+        for(const auto& p: l.prod){
             seed ^= stringHasher(p);
         }
         //note no look ahead hash
@@ -98,11 +98,11 @@ bool stateEqual_DiffLk::operator()(const state & lhs, const state & rhs) const{
     unordered_set<vector<string> , stringVecHash > rhs_withoutLk;
 
     for(const auto& l: lhs.productions){
-        lhs_withoutLk.insert(l.prod.production_rule[0]);
+        lhs_withoutLk.insert(l.prod);
     }
 
     for(const auto& l: rhs.productions){
-        rhs_withoutLk.insert(l.prod.production_rule[0]);
+        rhs_withoutLk.insert(l.prod);
     }
 
     same = lhs_withoutLk == rhs_withoutLk;
@@ -260,7 +260,7 @@ void ParserTable::fillInTable(){
                     for(const auto& l : curr_state.productions){
                         for(const auto& lk : l.lookahead){
                             actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
-                            move(step::reduce,l.prod.production_rule[0].size(),l.prod.name);//add nontmerinal to reduc instruction
+                            move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction
                         }
                     }
                     //break;
