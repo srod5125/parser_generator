@@ -312,7 +312,7 @@ void testAST2(){
     Parser p{grammer};
     //vector<string> input = {"a","a","+","$"}; //accepted grammar4
     //vector<string> input = {"id","*","id","+","id","$"}; //append end
-    vector<string> input = {"1","$"};
+    vector<string> input = {"1","+","1","$"};
     p.parse(input);
 }
 

@@ -255,37 +255,34 @@ void ParserTable::fillInTable(){
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
             //switch (curr_state.rank) {
-                //-------------------------------------
-                if(curr_state.rank == status::closed){
-                    for(const auto& l : curr_state.productions){
-                        for(const auto& lk : l.lookahead){
-                            actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
-                            move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction
-                        }
+            //-------------------------------------
+            //look for closed production
+            for(const auto& l : curr_state.productions){
+                if(l.dotPosition>=l.prod.size()){
+                    for(const auto& lk : l.lookahead){
+                        actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
+                        move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction
                     }
-                    //break;
                 }
-                //-------------------------------------
+            }
+            //for all transitions
+            for(const auto& t: curr_state.transitions){
+                if(d.grammar.at(t.first).isTerminal){
+                    actionTable[curr_state.stateNum][actionColumnMap[t.first]] = 
+                    move(step::shift,t.second->stateNum);
+                }
                 else{
-                    for(const auto& t: curr_state.transitions){
-                        if(d.grammar.at(t.first).isTerminal){
-                            actionTable[curr_state.stateNum][actionColumnMap[t.first]] = 
-                            move(step::shift,t.second->stateNum);
-                        }
-                        else{
-                            gotoTable[curr_state.stateNum][gotoColumnMap[t.first]] =
-                            move(step::none,t.second->stateNum);
-                        }
-                        //LOG("\tpushing states"<<t.second->stateNum)
-                        dfaTrace.push(*t.second);
-                    }
-                    //break;
+                    gotoTable[curr_state.stateNum][gotoColumnMap[t.first]] =
+                    move(step::none,t.second->stateNum);
                 }
-                if(curr_state.isAccepting){
-                    actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
-                    move(step::accept,-1);
-                }
-            //}
+                //LOG("\tpushing states"<<t.second->stateNum)
+                dfaTrace.push(*t.second);
+            }
+            
+            if(curr_state.isAccepting){
+                actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
+                move(step::accept,-1);
+            }
             
             visited.insert(curr_state);
         }
