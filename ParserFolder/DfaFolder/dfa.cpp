@@ -458,12 +458,12 @@ lineSet Dfa::closure_noState(lineSet lSet){
     return aux;//TODO: return by rvalue
 }
 //goto to transitions for state
-void Dfa::goToState(state& s){ //TODO: fix
+void Dfa::goToState(state& s){ //TODO: optimize
     //if state was already constructed set pointer to that
     //set transition to string -> state
     //std::cin.get();
     //LOG("hit1")
-    LOG(s)
+    //LOG(s)
     unordered_map< string, pair<lineSet,lineSet_WithLk> > produtionsAtDotPos;
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){

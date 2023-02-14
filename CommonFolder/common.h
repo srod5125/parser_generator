@@ -22,6 +22,8 @@ struct token
     token(const string&&); 
     //token(const string,const string); //tag, terminal
     bool operator==(const token&) const;
+
+    friend std::ostream& operator<< (std::ostream&, const token&);
 };
 
 

@@ -13,12 +13,17 @@ using std::unordered_set;
 
 // token
 token::token() : tag("EMPTY"), terminal("") {} // empty token init
-token::token(const string& t,const string& ter) : tag(t), terminal(terminal) { } //std::cout<<"constructor "<<terminal<<std::endl;}
-token::token(const string&& t,const string&& ter) : tag{t}, terminal{terminal} {}
+token::token(const string& t,const string& ter) : tag(t), terminal(ter) { } //std::cout<<"constructor "<<terminal<<std::endl;}
+token::token(const string&& t,const string&& ter) : tag{t}, terminal{ter} {}
 token::token(const string&& t) : tag{t}, terminal{t} {} // same
 
 bool token::operator==(const token& rhs) const{
     return this->tag == rhs.tag && this->terminal == rhs.terminal;
+}
+
+std::ostream& operator<< (std::ostream& out, const token& t){
+    out << t.tag << "\t: " << t.terminal << std::endl;
+    return out;
 }
 
 // symbol

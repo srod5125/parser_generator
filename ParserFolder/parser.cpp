@@ -30,10 +30,10 @@ Parser::Parser() : pointer{0}, pT{} {
 Parser::Parser(unordered_map<string,symbol>& g) : pStack{}, pointer{0}, pT{} {
     pT = ParserTable(g);
     //pStack.push({0,""});
-    LOG(pT)
+    //LOG(pT)
 }
 
-void Parser::parse(const vector<string>& input){
+Ast Parser::parse(const vector<string>& input){
     //prime
     pStack.push({0,""});
     move m = pT.getMove(0,input[pointer]);
@@ -41,8 +41,8 @@ void Parser::parse(const vector<string>& input){
     Ast ast;
     stack<shared_ptr<block>> parallelStack;
     parallelStack.push(std::make_unique<block>(input[pointer]));
-    LOG("first")
-    LOG(m.state<<" "<<getStepChar(m.s))
+    // LOG("first")
+    // LOG(m.state<<" "<<getStepChar(m.s))
 
     bool hitNonSRMove = false;
 
@@ -74,7 +74,7 @@ void Parser::parse(const vector<string>& input){
                 
                 m = pT.getMove(gotoState,val);
                 //LOG("\tNT: "<<val<<" "<<m.state);
-                LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
+                //LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
                 
                 //if(m.s == step::error) {break;}//break out early
                 
@@ -83,7 +83,7 @@ void Parser::parse(const vector<string>& input){
                 //break;
             }
             else{ 
-                LOG("hit default")
+                //LOG("hit default")
                 hitNonSRMove = true;
                 break;
             }
@@ -91,8 +91,8 @@ void Parser::parse(const vector<string>& input){
         //m = pT.getMove(pStack.top());
         m = hitNonSRMove ? move() : pT.getMove(pStack.top().first,input[pointer]);
         
-        LOG("move")
-        LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])
+        // LOG("move")
+        // LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])
 
         // string k = m.s == step::error ? "\tgot error" : "\tnope";
         // LOG(k)
@@ -102,19 +102,22 @@ void Parser::parse(const vector<string>& input){
             m.s = step::error;
         }
 
-        for(int j=0;j<=pointer && j<input.size();j+=1){
-            std::cout << input[j];
-        }
-        LOG("")
+        // for(int j=0;j<=pointer && j<input.size();j+=1){
+        //     std::cout << input[j];
+        // }
+        // LOG("")
     }
     //LOG(ast.head->val)
-    //LOG(ast);
+    
 
     if(m.s==step::accept){
         LOG("ACCPETED INPUT")
+        //LOG(ast);
     }
     else{
         LOG("REJECTED INPUT")
+        //TODO: LOG STACK TRACE WHERE ERROR OCCURED
+        //ask user how o resolve
         LOG(m.state<<" "<<getStepChar(m.s))
         for(int j=0;j<=pointer && j<input.size();j+=1){
             std::cout << input[j];
@@ -122,6 +125,8 @@ void Parser::parse(const vector<string>& input){
         LOG("")
         LOG("TOP "<<pStack.top().first<<" "<<pStack.top().second)
     }
+
+    return ast;
 }
 
 

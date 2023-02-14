@@ -17,13 +17,22 @@ using std::regex;
 
 class Lexer {
     private:
+        unordered_map<string,regex> matchingRules;
+
         vector<token> tokens;
-        void split(const string&,const unordered_map<string,regex>&);
     public:
         Lexer();//TODO: add default
         ~Lexer();
-        Lexer(const string&, const unordered_map<string,regex>&);
+        Lexer(const unordered_map<string,regex>&);
         const vector<token>& getTokens();
+
+        void marchingSplit(const string&);
+        void marchingSplit(string&&);
+
+        
+        void split(const string&);
+        void split(string&&);
+
 
         friend std::ostream& operator<< (std::ostream&, const Lexer&);
 };

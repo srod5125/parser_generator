@@ -11,6 +11,8 @@ using std::vector;
 using std::shared_ptr;
 using std::unique_ptr;
 
+//TODO: lark exposes data and children
+
 struct block{
   string val;
   vector< shared_ptr<block> > connections;

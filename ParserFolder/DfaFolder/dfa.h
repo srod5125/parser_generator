@@ -116,14 +116,16 @@ class Dfa {
         
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 
+        
+        shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
+        unordered_set<line,line::hash,line::equal> closure_noState(unordered_set<line,line::hash,line::equal>);
+        set<string> first(const string&,set<string>&);
+
     public:
         shared_ptr<state> startPtr;
         unordered_map<string,symbol> grammar;
         int globalStateNum;
 
-        shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
-        unordered_set<line,line::hash,line::equal> closure_noState(unordered_set<line,line::hash,line::equal>);
-        set<string> first(const string&,set<string>&);
         
         Dfa();
         Dfa(unordered_map<string,symbol>&);

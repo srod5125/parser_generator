@@ -250,7 +250,7 @@ void ParserTable::fillInTable(){
         curr_state = dfaTrace.top();
         dfaTrace.pop();
         if(visited.find(curr_state)==visited.end()){
-            LOG(curr_state)
+            //LOG(curr_state)
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);
@@ -353,10 +353,10 @@ void ParserTable::replaceEverInstance(int state, int stateToBeReplaced){
 
 //does bounds checking
 move ParserTable::getMove(int state,const string& val){
-    LOG("\t\tS: "<<state<<" V: "<<val)
+    //LOG("\t\tS: "<<state<<" V: "<<val)
     if(d.grammar[val].isTerminal){
         //if(0<=state && state<actionTable.size()){
-            LOG("\t\t"<<getStepChar(actionTable[state][actionColumnMap[val]].s)<<actionTable[state][actionColumnMap[val]].state)
+            //LOG("\t\t"<<getStepChar(actionTable[state][actionColumnMap[val]].s)<<actionTable[state][actionColumnMap[val]].state)
             return actionTable[state][actionColumnMap[val]];
         // }
         // else{
@@ -366,7 +366,7 @@ move ParserTable::getMove(int state,const string& val){
     }
     else{
         //if(0<=state && state<gotoTable.size()){
-            LOG("\t\t"<<getStepChar(gotoTable[state][gotoColumnMap[val]].s)<<gotoTable[state][gotoColumnMap[val]].nonterminal)
+            //LOG("\t\t"<<getStepChar(gotoTable[state][gotoColumnMap[val]].s)<<gotoTable[state][gotoColumnMap[val]].nonterminal)
             return gotoTable[state][gotoColumnMap[val]];
         // }
         // else{

@@ -6,10 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "../AstFolder/ast.h"
 #include "../LexerFolder/lexer.h"
 #include "../CommonFolder/common.h"
 #include "ParserTable/parserTable.h"
+#include "../AstFolder/ast.h"
 
 
 using std::string;
@@ -33,7 +33,7 @@ class Parser{
         Parser(unordered_map<string,symbol>&);
         ~Parser();
 
-        void parse(const vector<string>&);
+        Ast parse(const vector<string>&);
         //void parse(vector<string>&&);
 };
 

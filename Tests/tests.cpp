@@ -14,6 +14,8 @@
 #include "../CommonFolder/common.h"
 #include "../ParserFolder/ParserTable/parserTable.h"
 #include "../ParserFolder/parser.h"
+#include "../AstFolder/ast.h"
+
 
 using std::string;
 using std::unordered_map;
@@ -31,16 +33,17 @@ using vecOfVec = vector<vector<string>>;
 
 //isolated test for lexer to see if it splits string correctly
 void testLexer1(){
-    string text{"gg 123 gg"};
+    //string text{"gg 123 gg"};
     
     regex r1("gg");
-    regex r2("[0-9]+");
+    regex r2("([0-9]+)");
 
     unordered_map<string,regex> m;
     m["WORD"] = r1;
     m["NUM"] = r2;
 
-    Lexer l{text,m};
+    Lexer l{m};
+    l.split("gg 123 gg");
 
     std::cout << l;
 }
@@ -112,9 +115,9 @@ void testFirstDfa(){
     set<string> helper{};
     string t = "S";
     //LOG(grammer4["S"])
-    set<string> x = d.first(t,helper); //make public to test
+    //set<string> x = d.first(t,helper); //make public to test
     //LOG(t)
-    PRINTSET(x);
+    //PRINTSET(x);
 }
 
 void testDfaClosure(){
@@ -162,8 +165,8 @@ void testDfaClosure(){
     x.insert(l);
     //state s = state(0,l);
     Dfa d{grammer};
-    shared_ptr<state> s{d.closure(x)}; //make public to call
-    LOG(*s)
+    //shared_ptr<state> s{d.closure(x)}; //make public to call
+    //LOG(*s)
 }
 
 void testGoto1(){
@@ -313,16 +316,18 @@ void testAST2(){
     //vector<string> input = {"a","a","+","$"}; //accepted grammar4
     //vector<string> input = {"id","*","id","+","id","$"}; //append end
     vector<string> input = {"1","+","1","$"};
-    p.parse(input);
+    Ast ast = p.parse(input);
+    LOG(ast)
 }
-
+//TODO: write grammar tests with epsilon productions
+//TODO: write more dfa tests
 void runAllTest(){
     //testFirstDfa();
-    //testLexer1();
+    testLexer1();
     //testDfaClosure();
     //testGoto1();
     //testParserTable();
     //testParser();
     //testAST();
-    testAST2();
+    //testAST2();
 }

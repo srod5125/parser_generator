@@ -12,12 +12,18 @@ int main(){
     return 0;
 }
 
+//general outline
 
+//^write parsing procedure CHECK
+//integrate lexer with parser
+//  vector of tokens
+//get ast from procedure
+//hardcode ebnf gramamr
+//using ast to construct second grammar
 
 //TODO: overload << operator for lexor
-//TODO: set base class that raises errors
-//TODO: implement testing class
 
+//TODO: set base class that raises errors
 /*
     layer ; lexer : 0, parser : 1
     error message
@@ -50,11 +56,3 @@ int main(){
 //https://jsmachines.sourceforge.net/machines/lalr1.html
 
 
-//general outline
-
-//write parsing procedure
-//  integrate lexer with parser
-//  vector of tokens
-//get ast from procedure
-//hardcode ebnf gramamr
-//using ast to construct second grammar
