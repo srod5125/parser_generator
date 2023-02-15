@@ -26,7 +26,7 @@ using std::pair;
 //https://java2blog.com/split-string-space-cpp/
 
 
-void Lexer::split(const string& t){
+void Lexer::split(const string& s){
     // regex + tag name ; ex : /[0-9]+/, (NUMBER, '123')
     map<int,token> sortedMap;
 
@@ -34,30 +34,7 @@ void Lexer::split(const string& t){
     for(auto& pattern : matchingRules){
         //iterater returns pointer to matched substrings
         // we supply current regex to new iterator
-        for(auto matchIter = sregex_iterator(t.begin(),t.end(),pattern.second); matchIter != end ; ++matchIter){
-            //map inserts by sort automatically, we instert by postion
-            //std::cout << pattern.first << " " << matchIter->str() << std::endl;
-            token t;
-            //token t(pattern.first, matchIter->str()); //ERROR here
-            t.tag = pattern.first;
-            t.terminal = matchIter->str();
-            sortedMap.insert( pair<int,token>(matchIter->position(),t));
-        }
-    }
-    //unpack contents of sorted map into tokens array
-    for(auto& tok: sortedMap){
-        tokens.emplace_back(tok.second);
-    }
-}
-void Lexer::split(string&& t){
-    // regex + tag name ; ex : /[0-9]+/, (NUMBER, '123')
-    map<int,token> sortedMap;
-
-    auto end = sregex_iterator();
-    for(auto& pattern : matchingRules){
-        //iterater returns pointer to matched substrings
-        // we supply current regex to new iterator
-        for(auto matchIter = sregex_iterator(t.begin(),t.end(),pattern.second); matchIter != end ; ++matchIter){
+        for(auto matchIter = sregex_iterator(s.begin(),s.end(),pattern.second); matchIter != end ; ++matchIter){
             //map inserts by sort automatically, we instert by postion
             //std::cout << pattern.first << " " << matchIter->str() << std::endl;
             //token t;
@@ -68,10 +45,93 @@ void Lexer::split(string&& t){
         }
     }
     //unpack contents of sorted map into tokens array
-    for(auto& tok: sortedMap){
-        //here stratgey use substring size, and gaps to emplace back non matching string
-        LOG("")
-        tokens.emplace_back(tok.second);
+    regex whiteSpace("(\\s+)");
+    // int gap=0;
+    // for(auto& tok: sortedMap){
+    //     //here stratgey use substring size, and gaps to emplace back non matching string
+    //     //gap = tok.first + tok.second.terminal.size() - 1;
+    //     LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
+    //     tokens.emplace_back(tok.second);
+    // }
+    auto prevEl = sortedMap.begin();
+    auto nextEl = ++sortedMap.begin();
+    tokens.emplace_back(prevEl->second);
+    
+    while(nextEl!=sortedMap.end()){
+        int afterPrevEl = prevEl->first+prevEl->second.terminal.size();
+        //?LOG(afterPrevEl<<" "<<nextEl->first)
+        //?LOG(s.substr(afterPrevEl,nextEl->first-afterPrevEl))
+        //*ignoring white space
+        if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
+            //TODO: throw error with unmatched
+            token t1{"UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl)};
+            tokens.emplace_back(t1);
+        }
+        tokens.emplace_back(nextEl->second);
+        ++prevEl;
+        ++nextEl;
+    }
+    //get last potenial unmatched tokens
+    if(s.size() > prevEl->first+prevEl->second.terminal.size()){
+        regex nonWhiteSpace("(\\S+)");
+        string finalText{s.substr(prevEl->first+prevEl->second.terminal.size())};
+        for(auto finalIter = sregex_iterator(finalText.begin(), finalText.end(), nonWhiteSpace);finalIter!=end;++finalIter){
+            tokens.emplace_back( token("UNMATCHED",finalIter->str()));//get all non whitespace string and push as unmatched
+        }
+    }
+}
+void Lexer::split(string&& s){
+    // regex + tag name ; ex : /[0-9]+/, (NUMBER, '123')
+    map<int,token> sortedMap;
+
+    auto end = sregex_iterator();
+    for(auto& pattern : matchingRules){
+        //iterater returns pointer to matched substrings
+        // we supply current regex to new iterator
+        for(auto matchIter = sregex_iterator(s.begin(),s.end(),pattern.second); matchIter != end ; ++matchIter){
+            //map inserts by sort automatically, we instert by postion
+            //std::cout << pattern.first << " " << matchIter->str() << std::endl;
+            //token t;
+            token t(pattern.first, matchIter->str());
+            //t.tag = pattern.first;
+            //t.terminal = matchIter->str();
+            sortedMap.insert({matchIter->position(),t});
+        }
+    }
+    //unpack contents of sorted map into tokens array
+    regex whiteSpace("(\\s+)");
+    // int gap=0;
+    // for(auto& tok: sortedMap){
+    //     //here stratgey use substring size, and gaps to emplace back non matching string
+    //     //gap = tok.first + tok.second.terminal.size() - 1;
+    //     LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
+    //     tokens.emplace_back(tok.second);
+    // }
+    auto prevEl = sortedMap.begin();
+    auto nextEl = ++sortedMap.begin();
+    tokens.emplace_back(prevEl->second);
+    
+    while(nextEl!=sortedMap.end()){
+        int afterPrevEl = prevEl->first+prevEl->second.terminal.size();
+        //?LOG(afterPrevEl<<" "<<nextEl->first)
+        //?LOG(s.substr(afterPrevEl,nextEl->first-afterPrevEl))
+        if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
+            //?LOG("\t hit unmatcdhed")
+            token t1{"UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl)};
+            tokens.emplace_back(t1);
+        }
+        tokens.emplace_back(nextEl->second);
+        ++prevEl;
+        ++nextEl;
+    }
+
+    //get last potenial unmatched token
+    if(s.size() > prevEl->first+prevEl->second.terminal.size()){
+        regex nonWhiteSpace("(\\S+)");
+        string finalText{s.substr(prevEl->first+prevEl->second.terminal.size())};
+        for(auto finalIter = sregex_iterator(finalText.begin(), finalText.end(), nonWhiteSpace);finalIter!=end;++finalIter){
+            tokens.emplace_back( token("UNMATCHED",finalIter->str()));//get all non whitespace string and push as unmatched
+        }
     }
 }
 

@@ -18,8 +18,11 @@ struct token
 
     token();
     token(const string&,const string&); //tag, terminal  //ERROR: cannot initliaze memebers
-    token(const string&&,const string&&); 
-    token(const string&&); 
+    token(string&&,string&&);
+    token(const string&,string&&); 
+    token(string&&,const string&); 
+    token(string&&);
+    token(const string&); 
     //token(const string,const string); //tag, terminal
     bool operator==(const token&) const;
 

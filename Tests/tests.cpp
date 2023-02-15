@@ -43,7 +43,7 @@ void testLexer1(){
     m["NUM"] = r2;
 
     Lexer l{m};
-    l.split("gg 123 gg");
+    l.split("gg 123 zzz      gg   ");
 
     std::cout << l;
 }
