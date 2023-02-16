@@ -18,5 +18,6 @@ void testParser();
 void testAST();
 void testAST2();
 void testLexerAndParser();
+void testEpsilonProductions();
 
 #endif

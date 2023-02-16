@@ -12,7 +12,7 @@ using std::unordered_set;
 #include "common.h"
 
 // token
-token::token() : tag("EMPTY"), terminal("") {} // empty token init
+token::token() : tag("EMPTY"), terminal() {} // empty token init
 token::token(const string& t,const string& ter) : tag(t), terminal(ter) { } //std::cout<<"constructor "<<terminal<<std::endl;}
 token::token(string&& t,string&& ter) : tag{t}, terminal{ter} {}
 token::token(const string& t,string&& ter) : tag(t), terminal(ter) { }

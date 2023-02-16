@@ -199,8 +199,8 @@ void testGoto1(){
     unordered_map<string,symbol> grammer3;
     //grammer3["S'"] = symbol("S'",{"P"});
     grammer3["S"] = symbol("S",{"E"});
-    grammer3["E"] = symbol("E",vector<vector<string>>{{"E","+","T"},{"T"}});
-    grammer3["T"] = symbol("T",vector<vector<string>>{{"id","(","E",")"},{"id"}});
+    grammer3["E"] = symbol("E",vecOfVec{{"E","+","T"},{"T"}});
+    grammer3["T"] = symbol("T",vecOfVec{{"id","(","E",")"},{"id"}});
     grammer3["+"] = symbol({"+"});
     grammer3["id"] = symbol({"id"});
     grammer3["("] = symbol({"("});
@@ -362,7 +362,29 @@ void testLexerAndParser(){
     Ast ast = p.parse("123+456*789$");
     LOG(ast)
 }
-//TODO: write grammar tests with epsilon productions
+void testEpsilonProductions(){
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",{"E"});
+    grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
+    grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer["("] = symbol({"("});
+    grammer[")"] = symbol({")"});
+    grammer["$"] = symbol({"$"});
+    grammer["EMPTY"] = symbol();
+
+    
+    unordered_map<string,regex> matchingRules;
+    matchingRules["("] = regex("[(]");
+    matchingRules[")"] = regex("[)]");
+    matchingRules["$"] = regex("[$]");
+    matchingRules["EMPTY"] = regex("^$");
+
+    Parser p{grammer};
+    p.setLexer(matchingRules);
+    Ast ast = p.parse("(()))$");
+    LOG(ast)
+
+}
 //TODO: write more dfa tests
 void runAllTest(){
     //testFirstDfa();
@@ -373,5 +395,6 @@ void runAllTest(){
     //testParser();
     //testAST();
     //testAST2();
-    testLexerAndParser();
+    //testLexerAndParser();
+    testEpsilonProductions();
 }

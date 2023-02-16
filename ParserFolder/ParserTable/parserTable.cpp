@@ -375,7 +375,7 @@ move ParserTable::getMove(int state,const string& val){
         // }
     }
     // LOG("\t\tE_3")
-    // return move();
+    return move();
 }
 
 // move ParserTable::getMove(const pair<int,string>& pr){

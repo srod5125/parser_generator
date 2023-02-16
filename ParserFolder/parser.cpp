@@ -159,7 +159,7 @@ Ast Parser::parse(string&& input){
     LOG("first")
     LOG(m.state<<" "<<getStepChar(m.s))
 
-    bool hitNonSRMove = false;
+    bool hitErrMove = false;
 
     while(!(m.s == step::error || m.s == step::accept)){
         
@@ -191,7 +191,7 @@ Ast Parser::parse(string&& input){
                 LOG("\tNT: "<<val<<" "<<m.state);
                 LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
                 
-                //if(m.s == step::error) {break;}//break out early
+                hitErrMove = m.s == step::error;//break out early
                 
                 pStack.push({m.state,val});
                 parallelStack.push(std::move(tmpBPtr));
@@ -199,12 +199,12 @@ Ast Parser::parse(string&& input){
             }
             else{ 
                 //LOG("hit default")
-                hitNonSRMove = true;
+                hitErrMove = true;
                 break;
             }
         
         //m = pT.getMove(pStack.top());
-        m = hitNonSRMove ? move() : pT.getMove(pStack.top().first,inputTokens[pointer].tag);
+        m = hitErrMove ? move() : pT.getMove(pStack.top().first,inputTokens[pointer].tag);
         
         LOG("move")
         LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])
@@ -217,9 +217,9 @@ Ast Parser::parse(string&& input){
             m.s = step::error;
         }
 
-        // for(int j=0;j<=pointer && j<input.size();j+=1){
-        //     std::cout << input[j];
-        // }
+        for(int j=0;j<=pointer && j<input.size();j+=1){
+            std::cout << input[j];
+        }
         // LOG("")
     }
     //LOG(ast.head->val)
