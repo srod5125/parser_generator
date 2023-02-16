@@ -139,7 +139,7 @@ void ParserTable::init(){
     int count_nonterminals = 0;
     int count_terminals = 0;
 
-    for(auto& [sym,prod]: d.grammar){
+    for(const auto& [sym,prod]: d.grammar){
         if(prod.isTerminal){
             actionColumnMap[sym] = count_terminals; //set colum map of terminal to table array
             //LOG(sym << " " << count_terminals)

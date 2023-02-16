@@ -15,13 +15,13 @@ int main(){
 //general outline
 
 //^write parsing procedure CHECK
-//integrate lexer with parser
+// integrate lexer with parser
 //  vector of tokens
-//get ast from procedure
-//hardcode ebnf gramamr
-//using ast to construct second grammar
-
-//TODO: overload << operator for lexor
+// get ast from procedure
+// hardcode ebnf gramamr
+// using ast to construct second grammar and map of tags and regular expressions
+// feed second grammar to another parser
+// create class that can use ast, recievs handlers for aliases and calls local environment 
 
 //TODO: set base class that raises errors
 /*

@@ -35,15 +35,21 @@ using vecOfVec = vector<vector<string>>;
 void testLexer1(){
     //string text{"gg 123 gg"};
     
-    regex r1("gg");
-    regex r2("([0-9]+)");
 
     unordered_map<string,regex> m;
-    m["WORD"] = r1;
-    m["NUM"] = r2;
+    m["WORD"] = regex ("gg");
+    m["NUM"] = regex ("([0-9]+)");
 
-    Lexer l{m};
-    l.split("gg 123 zzz      gg   ");
+    
+    unordered_map<string,regex> matchingRules;
+    matchingRules["L"] = regex("b");
+    matchingRules["R"] = regex("a");
+    matchingRules["EOF"] = regex("[$]");
+
+    // Lexer l{m};
+    // l.split("gg 123 zzz      gg   ");
+    Lexer l{matchingRules};
+    l.split("aabb$ ");
 
     std::cout << l;
 }
@@ -213,7 +219,7 @@ void testGoto1(){
     grammer4["a"] = symbol({"a"});
     
 
-    Dfa d{grammer4};
+    Dfa d{grammer};
     //shared_ptr<state> s{d.closure(x)};
     //LOG(*s)
     //s->rank = status::start;
@@ -247,22 +253,32 @@ void testParser(){
     //void parse(vector<string>&&);
 
     Parser p{grammer};
-    vector<string> input = {"a","a","b","b","$"}; //append end
-    p.parse(input);
+    //vector<string> input = {"a","a","b","b","$"}; //append end
+    p.parse("aabb$");
 }
 
 void testAST(){
     unordered_map<string,symbol> grammer;
     grammer["S"] = symbol("S",vector<string>{"A","A"});
-    grammer["A"] = symbol("A",vector<vector<string>>{{"a","A"},{"b"}});
-    grammer["a"] = symbol({"a"});
-    grammer["b"] = symbol({"b"});
+    grammer["A"] = symbol("A",vector<vector<string>>{{"l","A"},{"r"}});
+    grammer["l"] = symbol({"l"});
+    grammer["r"] = symbol({"r"});
     grammer["$"] = symbol({"$"});
-    //void parse(vector<string>&&);
+    //void parse(vector<string>&&);'
+    unordered_map<string,regex> matchingRules;
+    matchingRules["l"] = regex("a");
+    matchingRules["r"] = regex("b");
+    matchingRules["$"] = regex("[$]");
+
+    // matchingRules["L"] = regex("a");
+    // matchingRules["R"] = regex("b");
+    // matchingRules["EOF"] = regex("[$]");
 
     Parser p{grammer};
-    vector<string> input = {"a","a","b","b","$"}; //append end //accepted grammar
-    p.parse(input);
+    p.setLexer(matchingRules);
+    //string input = {"a","a","b","b","$"}; //append end //accepted grammar
+    Ast ast =  p.parse("aabb$");
+    LOG(ast)
 }
 
 void testAST2(){
@@ -311,23 +327,51 @@ void testAST2(){
     // grammer4["*"] = symbol({"*"});
     // grammer4["a"] = symbol({"a"});
     
+    unordered_map<string,regex> matchingRules;
+    matchingRules["N"] = regex("a");
+    matchingRules["$"] = regex("[$]");
 
     Parser p{grammer};
     //vector<string> input = {"a","a","+","$"}; //accepted grammar4
     //vector<string> input = {"id","*","id","+","id","$"}; //append end
-    vector<string> input = {"1","+","1","$"};
-    Ast ast = p.parse(input);
+    //vector<string> input = {"1","+","1","$"};
+    
+    Ast ast = p.parse("1+1$");
+    LOG(ast)
+}
+void testLexerAndParser(){
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",{"E"});
+    grammer["E"] = symbol("E",vecOfVec{{"(","E",")"},{"N","O","E"},{"N"}});
+    grammer["N"] = symbol({"N"});
+    grammer["O"] = symbol({"O"});
+    grammer["("] = symbol({"("});
+    grammer[")"] = symbol({")"});
+    grammer["$"] = symbol({"$"});
+    
+    unordered_map<string,regex> matchingRules;
+    matchingRules["N"] = regex("([0-9]+)");
+    matchingRules["O"] = regex("[+|-|/|*]");
+    matchingRules["$"] = regex("[$]");
+
+    Parser p{grammer};
+    //vector<string> input = {"a","a","+","$"}; //accepted grammar4
+    //vector<string> input = {"id","*","id","+","id","$"}; //append end
+    //vector<string> input = {"1","+","1","$"};
+    p.setLexer(matchingRules);
+    Ast ast = p.parse("123+456*789$");
     LOG(ast)
 }
 //TODO: write grammar tests with epsilon productions
 //TODO: write more dfa tests
 void runAllTest(){
     //testFirstDfa();
-    testLexer1();
+    //testLexer1();//TODO: test tinfinte loop for unmatched regex
     //testDfaClosure();
     //testGoto1();
     //testParserTable();
     //testParser();
     //testAST();
     //testAST2();
+    testLexerAndParser();
 }

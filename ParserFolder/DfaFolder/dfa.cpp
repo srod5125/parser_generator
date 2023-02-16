@@ -22,6 +22,7 @@ using lineSet_WithLk = unordered_set<line,line::hash_withLk,line::equal_withLk>;
 
 #define LOG(msg) std::cout << msg << std::endl;
 #define CONDLOG(cond,msgTrue,msgFalse) if(cond) {std::cout << msgTrue << std::endl;} else {std::cout << msgFalse << std::endl;}
+#define ONTRUELOG(cond,msgTrue) if(cond) {std::cout << msgTrue << std::endl;}
 #define PRINTSET(set) std::cout << "{"; for(const auto& el:set){ std::cout << el << " "; } std::cout << "}"; std::cout << std::endl;
 
 // ----------- line ---------
@@ -461,7 +462,6 @@ lineSet Dfa::closure_noState(lineSet lSet){
 void Dfa::goToState(state& s){ //TODO: optimize
     //if state was already constructed set pointer to that
     //set transition to string -> state
-    //std::cin.get();
     //LOG("hit1")
     //LOG(s)
     unordered_map< string, pair<lineSet,lineSet_WithLk> > produtionsAtDotPos;
@@ -479,6 +479,8 @@ void Dfa::goToState(state& s){ //TODO: optimize
     //unordered_set<string> toVisit;
     //for all collections, if it was already produced connect
     for(auto& [prodName, setOfProds]: produtionsAtDotPos){// does not contain
+        // LOG("ON:"<<s.stateNum<<" : "<<prodName)
+        // PRINTSET(setOfProds.first)
         //increment total dots
         // lineSet incrementedTemp;
         // auto setIter=setOfProds.begin();
@@ -532,25 +534,27 @@ void Dfa::goToState(state& s){ //TODO: optimize
             // propogate new look aheads
             // recall goto on
             bool isSubset = true;
+            // if(prodName=="b"&&s.stateNum==0){
+            //     LOG("hit 7")
+            //     for(const auto& lll:coreMap[setOfProds.first].kernelLookaheadCpyMap){
+            //         LOG(lll.first)
+            //     }
+            // }
             for(const auto& lS:setOfProds.second){
-                if(coreMap[setOfProds.first].kernelLookaheadCpyMap.find(lS)!=coreMap[setOfProds.first].kernelLookaheadCpyMap.end()){
-                    auto tmpLineCpy = coreMap[setOfProds.first].kernelLookaheadCpyMap.find(lS);
-                    if(!std::includes(tmpLineCpy->second.begin(),tmpLineCpy->second.end(),lS.lookahead.begin(),lS.lookahead.end())){
+                auto linePos = coreMap[setOfProds.first].kernelLookaheadCpyMap.find(lS);
+                if(linePos !=coreMap[setOfProds.first].kernelLookaheadCpyMap.end()){
+                    if(!std::includes(linePos->second.begin(),linePos->second.end(),lS.lookahead.begin(),lS.lookahead.end())){
                         isSubset = false;
                         break;
                     }
                 }
                 else{//this case will never be hit
+                    LOG("hit impossible state")
                     isSubset = false;
                     break;
                 }
             }
-            if(isSubset){
-                //LOG("SECOND")
-                //PRINTSET(setOfProds.second)
-                s.transitions[prodName] = coreMap[setOfProds.first].statePtr;
-            }
-            else{
+            if(!isSubset){
                 //propogate new lookahead recusively
                 lineSet mergedSets;
                 lineSet_WithLk mergedSetsCpy;
@@ -571,9 +575,11 @@ void Dfa::goToState(state& s){ //TODO: optimize
                 coreMap[setOfProds.first].statePtr->productions = closure_noState(mergedSets);
                 //LOG(">"<<coreMap[setOfProds.first].statePtr->stateNum)
                 //LOG(*coreMap[setOfProds.first].statePtr)
+                
                 goToState(*(coreMap[setOfProds.first].statePtr));
                 //LOG(s.stateNum<<"<")
             }
+            s.transitions[prodName] = coreMap[setOfProds.first].statePtr;
         }
         //LOG("<")
     }

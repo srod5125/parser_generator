@@ -21,17 +21,19 @@ class Lexer {
 
         vector<token> tokens;
     public:
-        Lexer();//TODO: add default
+        Lexer();
         ~Lexer();
         Lexer(const unordered_map<string,regex>&);
         const vector<token>& getTokens();
 
-        void marchingSplit(const string&);
+        void marchingSplit(const string&);//TODO: delete
         void marchingSplit(string&&);
 
         
         void split(const string&);
         void split(string&&);
+
+        bool isNotSet();
 
 
         friend std::ostream& operator<< (std::ostream&, const Lexer&);

@@ -43,33 +43,39 @@ void Lexer::split(const string& s){
             //t.terminal = matchIter->str();
             sortedMap.insert({matchIter->position(),t});
         }
+        //LOG("hit 4")//!HERE
     }
     //unpack contents of sorted map into tokens array
     regex whiteSpace("(\\s+)");
     // int gap=0;
-    // for(auto& tok: sortedMap){
+    // for(const auto& tok: sortedMap){
     //     //here stratgey use substring size, and gaps to emplace back non matching string
     //     //gap = tok.first + tok.second.terminal.size() - 1;
-    //     LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
-    //     tokens.emplace_back(tok.second);
+    //     //LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
+    //     LOG(tok.second)
+    //     //tokens.emplace_back(tok.second);
     // }
     auto prevEl = sortedMap.begin();
     auto nextEl = ++sortedMap.begin();
     tokens.emplace_back(prevEl->second);
-    
+    //LOG("hit 5")
     while(nextEl!=sortedMap.end()){
         int afterPrevEl = prevEl->first+prevEl->second.terminal.size();
         //?LOG(afterPrevEl<<" "<<nextEl->first)
         //?LOG(s.substr(afterPrevEl,nextEl->first-afterPrevEl))
         //*ignoring white space
-        if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
-            //TODO: throw error with unmatched
-            token t1{"UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl)};
-            tokens.emplace_back(t1);
+        
+        if(nextEl->first > afterPrevEl){
+            if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
+                //TODO: throw error with unmatched
+                tokens.emplace_back( token( "UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl) ) );
+            }
         }
         tokens.emplace_back(nextEl->second);
         ++prevEl;
         ++nextEl;
+
+        //LOG("hit 3")
     }
     //get last potenial unmatched tokens
     if(s.size() > prevEl->first+prevEl->second.terminal.size()){
@@ -97,35 +103,40 @@ void Lexer::split(string&& s){
             //t.terminal = matchIter->str();
             sortedMap.insert({matchIter->position(),t});
         }
+        //LOG("hit 4")//!HERE
     }
     //unpack contents of sorted map into tokens array
     regex whiteSpace("(\\s+)");
     // int gap=0;
-    // for(auto& tok: sortedMap){
+    // for(const auto& tok: sortedMap){
     //     //here stratgey use substring size, and gaps to emplace back non matching string
     //     //gap = tok.first + tok.second.terminal.size() - 1;
-    //     LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
-    //     tokens.emplace_back(tok.second);
+    //     //LOG("pos:"<<tok.first<<" end:"<<tok.first+tok.second.terminal.size())
+    //     LOG(tok.second)
+    //     //tokens.emplace_back(tok.second);
     // }
     auto prevEl = sortedMap.begin();
     auto nextEl = ++sortedMap.begin();
     tokens.emplace_back(prevEl->second);
-    
+    //LOG("hit 5")
     while(nextEl!=sortedMap.end()){
         int afterPrevEl = prevEl->first+prevEl->second.terminal.size();
         //?LOG(afterPrevEl<<" "<<nextEl->first)
         //?LOG(s.substr(afterPrevEl,nextEl->first-afterPrevEl))
-        if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
-            //?LOG("\t hit unmatcdhed")
-            token t1{"UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl)};
-            tokens.emplace_back(t1);
+        //*ignoring white space
+        if(nextEl->first > afterPrevEl){
+            if(!regex_match(s.substr(afterPrevEl,nextEl->first-afterPrevEl),whiteSpace)){
+                //TODO: throw error with unmatched
+                tokens.emplace_back( token( "UNMATCHED",s.substr(afterPrevEl,nextEl->first-afterPrevEl) ) );
+            }
         }
         tokens.emplace_back(nextEl->second);
         ++prevEl;
         ++nextEl;
-    }
 
-    //get last potenial unmatched token
+        //LOG("hit 3")
+    }
+    //get last potenial unmatched tokens
     if(s.size() > prevEl->first+prevEl->second.terminal.size()){
         regex nonWhiteSpace("(\\S+)");
         string finalText{s.substr(prevEl->first+prevEl->second.terminal.size())};
@@ -178,6 +189,10 @@ void Lexer::marchingSplit(const string& s){
         }
 
     }
+}
+
+bool Lexer::isNotSet(){
+    return matchingRules.empty();
 }
 
 void Lexer::marchingSplit(string&& s){
