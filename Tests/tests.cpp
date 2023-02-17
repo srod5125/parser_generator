@@ -118,9 +118,19 @@ void testFirstDfa(){
     grammer4["a"] = symbol({"a"});
     grammer4["EMPTY"] = symbol();
 
-    Dfa d{grammer4};
+    unordered_map<string,symbol> grammer7;
+    grammer7["S"] = symbol("S",{"P"});
+    //grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
+    //grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer7["P"] = symbol("P",vecOfVec{{"EMPTY"},{"P","x"}});
+    // grammer["("] = symbol({"("});
+    grammer7["x"] = symbol({"x"});
+    grammer7["$"] = symbol({"$"});
+    grammer7["EMPTY"] = symbol();
+
+    Dfa d{grammer7};
     set<string> helper{};
-    string t = "S";
+    string t = "P";
     //LOG(grammer4["S"])
     set<string> x = d.first(t,helper); //make public to test
     //LOG(t)
@@ -174,16 +184,27 @@ void testDfaClosure(){
     grammer7["$"] = symbol({"$"});
     grammer7["EMPTY"] = symbol();
 
+    
+    unordered_map<string,symbol> grammer8;
+    grammer8["S"] = symbol("S",{"P"});
+    //grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
+    //grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer8["P"] = symbol("P",vecOfVec{{"EMPTY"},{"P","x"}});
+    // grammer["("] = symbol({"("});
+    grammer8["x"] = symbol({"x"});
+    grammer8["$"] = symbol({"$"});
+    grammer8["EMPTY"] = symbol();
+
 
     //line l{1,grammer["A"],{"a","b"}};
     //{[E -> (.P ), $]}
-    line l{1,symbol("E",vector<string>{"(","P",")"}),{"$"}};
+    line l{0,grammer8["S"],{"$"}};
     unordered_set<line,line::hash,line::equal> x;
     x.insert(l);
     //state s = state(0,l);
-    Dfa d{grammer7};
-    //shared_ptr<state> s{d.closure(x)}; //make public to call
-    //LOG(*s)
+    Dfa d{grammer8};
+    shared_ptr<state> s{d.closure(x)}; //make public to call
+    LOG(*s)
 }
 
 void testGoto1(){
@@ -379,22 +400,22 @@ void testEpsilonProductions(){
     grammer["S"] = symbol("S",{"P"});
     //grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
     //grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
-    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"},{"p","P"}});
+    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"},{"x","P"}});
     // grammer["("] = symbol({"("});
-    grammer["p"] = symbol({"p"});
+    grammer["x"] = symbol({"x"});
     grammer["$"] = symbol({"$"});
     grammer["EMPTY"] = symbol();
 
     
     unordered_map<string,regex> matchingRules;
     // matchingRules["("] = regex("[(]");
-    matchingRules["p"] = regex("[p]");
+    matchingRules["x"] = regex("[x]");
     matchingRules["$"] = regex("[$]");
     matchingRules["EMPTY"] = regex("^$");
 
     Parser p{grammer};
     p.setLexer(matchingRules);
-    Ast ast = p.parse("ppppppp");
+    Ast ast = p.parse("xxxx");
     LOG(ast)
 }
 void testEpsilonProductions2(){

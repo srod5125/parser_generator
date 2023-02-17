@@ -51,6 +51,7 @@ struct line {
 
     friend std::ostream& operator<< (std::ostream&, const line&);
 };
+//TODO: remove status, statenum 0 == start
 enum class status : char{
     closed,
     intermediate,
@@ -114,9 +115,7 @@ class Dfa {
         
         void goToState(state&);//recurisve calls clojure, should know whther stat has been set
 
-        
-        shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
-        unordered_set<line,line::hash,line::equal> closure_noState(unordered_set<line,line::hash,line::equal>);
+        unordered_set<line,line::hash,line::equal> closure_noState(const unordered_set<line,line::hash,line::equal>&);
         
 
     public:
@@ -131,6 +130,8 @@ class Dfa {
 
         set<string> first(const string&,set<string>&);
         //unordered_set<string> first(const string&);
+        
+        shared_ptr<state> closure(const unordered_set<line,line::hash,line::equal>&);
 
 };
 

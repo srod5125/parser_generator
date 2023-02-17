@@ -314,7 +314,7 @@ set<string> Dfa::first(const string& sym,set<string>& alreadySeen){
 // }
 
 
-shared_ptr<state> Dfa::closure(lineSet lSet){
+shared_ptr<state> Dfa::closure(const lineSet& lSet){
     //LOG("kernel")
     //PRINTSET(lSet)
     //check out early if is size of 1 and closed or accepting
@@ -334,15 +334,16 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     }
     
     unordered_map<line,set<string>,line::hash,line::equal> alreadySeen;//a line map
-    //map between string+vector : set
+    lineSet_WithLk lSetWithLk{lSet.begin(),lSet.end()};
 
-    auto lineSetIter{lSet.begin()};
+    auto lineSetIter{lSetWithLk.begin()};
     bool allClosed{true};
     bool encounteredAcceptCondition{false};
 
-    while(!lSet.empty()){
-        lineSetIter = lSet.begin();
-        //?LOG("\t"<<*lineSetIter);
+    while(!lSetWithLk.empty()){
+        lineSetIter = lSetWithLk.begin();
+        //LOG("\t"<<*lineSetIter);
+        //std::cin.get();
 
         //if not closed
         if(lineSetIter->dotPosition < lineSetIter->prod.size())
@@ -361,12 +362,12 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.size()){
                             set<string> firstHelper{};
                             x = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
-                            //printSet(x);
+                            //x.insert(y.begin(),y.end());
+                            // LOG("....")
                             //LOG("hit")
                         }
-                        //LOG("\t"<<newLine)
                         //introduce new memebers
-                        lSet.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
+                        lSetWithLk.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                     
@@ -387,7 +388,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
         //LOG("--")
         //delete current memeber
         alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
-        lSet.erase(lineSetIter);
+        lSetWithLk.erase(lineSetIter);
     }
 
     lineSet aux{};
@@ -406,13 +407,14 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
     return sI;
 
 }
-lineSet Dfa::closure_noState(lineSet lSet){
+lineSet Dfa::closure_noState(const lineSet& lSet){
 
-    unordered_map<line,set<string>,line::hash,line::equal> alreadySeen; 
-    auto lineSetIter{lSet.begin()};
+    unordered_map<line,set<string>,line::hash,line::equal> alreadySeen;
+    lineSet_WithLk lSetWithLk{lSet.begin(),lSet.end()};
+    auto lineSetIter{lSetWithLk.begin()};
 
-    while(!lSet.empty()){
-        lineSetIter = lSet.begin();
+    while(!lSetWithLk.empty()){
+        lineSetIter = lSetWithLk.begin();
         
         if(lineSetIter->dotPosition < lineSetIter->prod.size())
         {
@@ -433,7 +435,7 @@ lineSet Dfa::closure_noState(lineSet lSet){
                             //printSet(x);
                             //LOG("hit")
                         }
-                        lSet.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
+                        lSetWithLk.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                     
@@ -443,7 +445,7 @@ lineSet Dfa::closure_noState(lineSet lSet){
         }
         //LOG("\t\t\tin new c"<<*lineSetIter)
         alreadySeen[*lineSetIter].insert(lineSetIter->lookahead.begin(),lineSetIter->lookahead.end());
-        lSet.erase(lineSetIter);
+        lSetWithLk.erase(lineSetIter);
     }
 
     lineSet aux{};
