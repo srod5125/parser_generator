@@ -342,7 +342,7 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
 
     while(!lSet.empty()){
         lineSetIter = lSet.begin();
-        //LOG(*lineSetIter);
+        //?LOG("\t"<<*lineSetIter);
 
         //if not closed
         if(lineSetIter->dotPosition < lineSetIter->prod.size())
@@ -364,10 +364,9 @@ shared_ptr<state> Dfa::closure(lineSet lSet){
                             //printSet(x);
                             //LOG("hit")
                         }
-                        line newLine{line(0,symbol(currentDotPosString,vector<string>(prods)),x)};
                         //LOG("\t"<<newLine)
                         //introduce new memebers
-                        lSet.insert(newLine);
+                        lSet.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                     
@@ -434,10 +433,7 @@ lineSet Dfa::closure_noState(lineSet lSet){
                             //printSet(x);
                             //LOG("hit")
                         }
-                        line newLine{line(0,symbol(currentDotPosString,vector<string>(prods)),x)};
-                        //LOG("\t"<<newLine)
-                        //introduce new memebers
-                        lSet.insert(newLine);
+                        lSet.insert( line(0,symbol(currentDotPosString,vector<string>(prods)),x) );
                     }
                     //alreadySeen.insert({currentDotPosString,lineSetIter->dotPosition}); // insert already seen
                     

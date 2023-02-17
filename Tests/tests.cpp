@@ -165,13 +165,23 @@ void testDfaClosure(){
     grammer4["*"] = symbol({"*"});
     grammer4["a"] = symbol({"a"});
 
+    unordered_map<string,symbol> grammer7;
+    grammer7["S"] = symbol("S",{"E"});
+    grammer7["E"] = symbol("E",vecOfVec{{"(","P",")"}});
+    grammer7["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer7["("] = symbol({"("});
+    grammer7[")"] = symbol({")"});
+    grammer7["$"] = symbol({"$"});
+    grammer7["EMPTY"] = symbol();
+
 
     //line l{1,grammer["A"],{"a","b"}};
-    line l{0,grammer["S'"],{"$"}};
+    //{[E -> (.P ), $]}
+    line l{1,symbol("E",vector<string>{"(","P",")"}),{"$"}};
     unordered_set<line,line::hash,line::equal> x;
     x.insert(l);
     //state s = state(0,l);
-    Dfa d{grammer};
+    Dfa d{grammer7};
     //shared_ptr<state> s{d.closure(x)}; //make public to call
     //LOG(*s)
 }
@@ -360,7 +370,7 @@ void testLexerAndParser(){
     //vector<string> input = {"id","*","id","+","id","$"}; //append end
     //vector<string> input = {"1","+","1","$"};
     p.setLexer(matchingRules);
-    Ast ast = p.parse("123+456*789$");
+    Ast ast = p.parse("123+456*789");
     LOG(ast)
 }
 void testEpsilonProductions(){
@@ -369,32 +379,30 @@ void testEpsilonProductions(){
     grammer["S"] = symbol("S",{"P"});
     //grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
     //grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
-    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"}});
+    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"},{"p","P"}});
     // grammer["("] = symbol({"("});
-    // grammer[")"] = symbol({")"});
+    grammer["p"] = symbol({"p"});
     grammer["$"] = symbol({"$"});
     grammer["EMPTY"] = symbol();
 
     
     unordered_map<string,regex> matchingRules;
     // matchingRules["("] = regex("[(]");
-    // matchingRules[")"] = regex("[)]");
+    matchingRules["p"] = regex("[p]");
     matchingRules["$"] = regex("[$]");
-    matchingRules["EMPTY"] = regex("");
+    matchingRules["EMPTY"] = regex("^$");
 
     Parser p{grammer};
     p.setLexer(matchingRules);
-    Ast ast = p.parse("");
+    Ast ast = p.parse("ppppppp");
     LOG(ast)
-
 }
 void testEpsilonProductions2(){
-    //balanced paren
+    //balanced paren, grammar is nont lalr
     unordered_map<string,symbol> grammer;
-    grammer["S"] = symbol("S",{"P"});
+    grammer["S"] = symbol("S",{"E"});
     grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
     grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
-    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"}});
     grammer["("] = symbol({"("});
     grammer[")"] = symbol({")"});
     grammer["$"] = symbol({"$"});
@@ -405,11 +413,11 @@ void testEpsilonProductions2(){
     matchingRules["("] = regex("[(]");
     matchingRules[")"] = regex("[)]");
     matchingRules["$"] = regex("[$]");
-    matchingRules["EMPTY"] = regex("");
+    matchingRules["EMPTY"] = regex("^$");
 
     Parser p{grammer};
     p.setLexer(matchingRules);
-    Ast ast = p.parse("");
+    Ast ast = p.parse("()");
     LOG(ast)
 
 }
