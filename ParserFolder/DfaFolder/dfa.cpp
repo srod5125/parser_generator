@@ -323,7 +323,7 @@ shared_ptr<state> Dfa::closure(const lineSet& lSet){
         auto lineSetIter = lSet.begin();
         if(lineSetIter->dotPosition >= lineSetIter->prod.size()){ // s-> aAb o
             s->rank = status::closed;
-            if(lineSetIter->name == "S'" || lineSetIter->name=="AUGMENTED_START"){
+            if(lineSetIter->name == "S'" || lineSetIter->name=="start"){
                 s->isAccepting = true;
             }
             // LOG(">")
@@ -378,7 +378,7 @@ shared_ptr<state> Dfa::closure(const lineSet& lSet){
         else
         {
             //hits here when dot position is beyond production length
-            encounteredAcceptCondition = lineSetIter->name == "S'" || lineSetIter->name=="AUGMENTED_START";
+            encounteredAcceptCondition = lineSetIter->name == "S'" || lineSetIter->name=="start";
             //CONDLOG(encounteredAcceptCondition,"encounted accept","did not encounter accept")
         }
         //(string,vector<string>) insert new set

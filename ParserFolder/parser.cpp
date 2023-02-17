@@ -186,7 +186,7 @@ Ast Parser::parse(string&& input){//TODO: handle unmatched case
             //reduce pop off 2*len of production rule
             shared_ptr<block> tmpBPtr = std::make_unique<block>(val);
             //LOG(val)
-            if(val == "S"){ ast.head = tmpBPtr; }// set start of tree
+            if(val == "S" || val == "start"){ ast.head = tmpBPtr; }// set start of tree
             for(int i=0;i<m.len;i+=1){
                 //LOG("here"<<parallelStack.top()->val);
                 //if(parallelStack.top()){

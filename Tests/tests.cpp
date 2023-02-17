@@ -445,7 +445,7 @@ void testEpsilonProductions2(){
 //TODO: write more dfa tests
 void runAllTest(){
     //testFirstDfa();
-    //testLexer1();//TODO: test tinfinte loop for unmatched regex
+    //testLexer1();//TODO: test tinfinte loop for unmatched regex (test size of matches != end)
     //testDfaClosure();
     //testGoto1();
     //testParserTable();

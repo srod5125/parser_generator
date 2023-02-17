@@ -278,7 +278,7 @@ void ParserTable::fillInTable(){//TODO: sr conflicts emit err
                 //LOG("\tpushing states"<<t.second->stateNum)
                 dfaTrace.push(*t.second);
             }
-            
+            //TODO: note sr conflicts and precendnce
             if(curr_state.isAccepting){
                 actionTable[curr_state.stateNum][actionColumnMap["$"]] = 
                 move(step::accept,-1);
