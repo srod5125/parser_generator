@@ -112,18 +112,19 @@ void testFirstDfa(){
     grammer["-"] = symbol({"-"});
 
     unordered_map<string,symbol> grammer4;
-    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"}});
+    grammer4["S"] = symbol("S",vecOfVec{{"S","S","+"},{"S","S","*"},{"a"},{"EMPTY"}});
     grammer4["+"] = symbol({"+"});
     grammer4["*"] = symbol({"*"});
     grammer4["a"] = symbol({"a"});
+    grammer4["EMPTY"] = symbol();
 
     Dfa d{grammer4};
     set<string> helper{};
     string t = "S";
     //LOG(grammer4["S"])
-    //set<string> x = d.first(t,helper); //make public to test
+    set<string> x = d.first(t,helper); //make public to test
     //LOG(t)
-    //PRINTSET(x);
+    PRINTSET(x);
 }
 
 void testDfaClosure(){
@@ -363,10 +364,37 @@ void testLexerAndParser(){
     LOG(ast)
 }
 void testEpsilonProductions(){
+    //balanced paren
     unordered_map<string,symbol> grammer;
-    grammer["S"] = symbol("S",{"E"});
+    grammer["S"] = symbol("S",{"P"});
+    //grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
+    //grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"}});
+    // grammer["("] = symbol({"("});
+    // grammer[")"] = symbol({")"});
+    grammer["$"] = symbol({"$"});
+    grammer["EMPTY"] = symbol();
+
+    
+    unordered_map<string,regex> matchingRules;
+    // matchingRules["("] = regex("[(]");
+    // matchingRules[")"] = regex("[)]");
+    matchingRules["$"] = regex("[$]");
+    matchingRules["EMPTY"] = regex("");
+
+    Parser p{grammer};
+    p.setLexer(matchingRules);
+    Ast ast = p.parse("");
+    LOG(ast)
+
+}
+void testEpsilonProductions2(){
+    //balanced paren
+    unordered_map<string,symbol> grammer;
+    grammer["S"] = symbol("S",{"P"});
     grammer["E"] = symbol("E",vecOfVec{{"(","P",")"}});
     grammer["P"] = symbol("P",vecOfVec{{"(",")"},{"(","P",")"},{"EMPTY"}});
+    grammer["P"] = symbol("P",vecOfVec{{"EMPTY"}});
     grammer["("] = symbol({"("});
     grammer[")"] = symbol({")"});
     grammer["$"] = symbol({"$"});
@@ -377,11 +405,11 @@ void testEpsilonProductions(){
     matchingRules["("] = regex("[(]");
     matchingRules[")"] = regex("[)]");
     matchingRules["$"] = regex("[$]");
-    matchingRules["EMPTY"] = regex("^$");
+    matchingRules["EMPTY"] = regex("");
 
     Parser p{grammer};
     p.setLexer(matchingRules);
-    Ast ast = p.parse("(()))$");
+    Ast ast = p.parse("");
     LOG(ast)
 
 }
@@ -397,4 +425,5 @@ void runAllTest(){
     //testAST2();
     //testLexerAndParser();
     testEpsilonProductions();
+    //testEpsilonProductions2();
 }

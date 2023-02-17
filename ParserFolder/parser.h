@@ -36,7 +36,7 @@ class Parser{
         Parser(unordered_map<string,symbol>&);
         ~Parser();
 
-        Ast parse(const string&);
+        Ast parse(string&);
         Ast parse(string&&);
 
         void setLexer(const unordered_map<string,regex>&);

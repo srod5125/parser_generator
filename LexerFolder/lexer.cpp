@@ -85,6 +85,9 @@ void Lexer::split(const string& s){
             tokens.emplace_back( token("UNMATCHED",finalIter->str()));//get all non whitespace string and push as unmatched
         }
     }
+
+    //emplace back end of file
+    //tokens.emplace_back( token("$") );
 }
 void Lexer::split(string&& s){
     // regex + tag name ; ex : /[0-9]+/, (NUMBER, '123')
@@ -144,6 +147,8 @@ void Lexer::split(string&& s){
             tokens.emplace_back( token("UNMATCHED",finalIter->str()));//get all non whitespace string and push as unmatched
         }
     }
+    //emplace back end of file
+    //tokens.emplace_back( token("$") );
 }
 
 void Lexer::marchingSplit(const string& s){

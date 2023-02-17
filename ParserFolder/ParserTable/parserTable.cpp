@@ -238,7 +238,7 @@ std::ostream& operator<< (std::ostream& out, const ParserTable& pT){
     //as a state is reached add it to map
     //key:state,value:set(state numbers)
     //fill in table transition steps based on grammer
-void ParserTable::fillInTable(){
+void ParserTable::fillInTable(){//TODO: sr conflicts emit err
     //verified over simple grammar
     stack<state> dfaTrace;
     unordered_set<state,state::hash,state::equal> visited;
@@ -258,7 +258,7 @@ void ParserTable::fillInTable(){
             //-------------------------------------
             //look for closed production
             for(const auto& l : curr_state.productions){
-                if(l.dotPosition>=l.prod.size()){
+                if(l.dotPosition>=l.prod.size() || (l.prod.size()==1 && l.prod[0]=="EMPTY")){//epsilon reduction
                     for(const auto& lk : l.lookahead){
                         actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
                         move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction

@@ -107,9 +107,7 @@ struct coreManager {
 };
 class Dfa {
     private:
-        bool hasEpsilonProduction(string);
-        
-        
+
         unordered_map<string, set<string> > firstCache;
         
         unordered_map< unordered_set<line,line::hash,line::equal>, coreManager, coreHash, coreEqual> coreMap;
@@ -119,7 +117,7 @@ class Dfa {
         
         shared_ptr<state> closure(unordered_set<line,line::hash,line::equal>);
         unordered_set<line,line::hash,line::equal> closure_noState(unordered_set<line,line::hash,line::equal>);
-        set<string> first(const string&,set<string>&);
+        
 
     public:
         shared_ptr<state> startPtr;
@@ -131,6 +129,7 @@ class Dfa {
         Dfa(unordered_map<string,symbol>&);
         ~Dfa();
 
+        set<string> first(const string&,set<string>&);
         //unordered_set<string> first(const string&);
 
 };

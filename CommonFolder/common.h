@@ -34,6 +34,7 @@ struct symbol{
     bool isTerminal;
     string name;
     token t;
+    bool hasEpsilonProduction;
 
     vector<vector<string>> production_rule; // s-> { {a,B,c}, {X,T} }
 
@@ -48,6 +49,9 @@ struct symbol{
 
     friend std::ostream& operator<< (std::ostream&, const symbol&);
 };
+
+bool determineEpsilonProduction(const vector<vector<string>>&);
+bool determineEpsilonProduction(const vector<string>&);
 
 //interface for hashable structures
 struct index {

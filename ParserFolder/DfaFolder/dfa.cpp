@@ -256,8 +256,7 @@ set<string> Dfa::first(const string& sym,set<string>& alreadySeen){
                             x.insert(seq[0]);
                         }
                         else{
-
-                            if(!hasEpsilonProduction(seq[0])){
+                            if(!grammar.at(seq[0]).hasEpsilonProduction){
                                 //LOG("hit 4")
                                 set<string> tmp = first(seq[0],alreadySeen);
                                 //LOG("hit 4 return")
@@ -301,18 +300,18 @@ set<string> Dfa::first(const string& sym,set<string>& alreadySeen){
     return {};
 }
 
-bool Dfa::hasEpsilonProduction(string nonterminal){
-    bool hasEpsilonProduction{false};
-    for(const auto& i: grammar[nonterminal].production_rule){
-        if(!i.empty()){
-            if(i.size()==1 && i[0]=="EMPTY"){
-                hasEpsilonProduction=true;
-                break;
-            }
-        }
-    }
-    return hasEpsilonProduction;
-}
+// bool Dfa::hasEpsilonProduction(string nonterminal){
+//     bool hasEpsilonProduction{false};
+//     for(const auto& i: grammar[nonterminal].production_rule){
+//         if(!i.empty()){
+//             if(i.size()==1 && i[0]=="EMPTY"){
+//                 hasEpsilonProduction=true;
+//                 break;
+//             }
+//         }
+//     }
+//     return hasEpsilonProduction;
+// }
 
 
 shared_ptr<state> Dfa::closure(lineSet lSet){
@@ -468,10 +467,12 @@ void Dfa::goToState(state& s){ //TODO: optimize
     //collect set of lines with equal dot position strings
     for(const auto& l : s.productions){
         if(l.dotPosition<l.prod.size()){
-            line newLine{l};
-            newLine.dotPosition+=1;
-            produtionsAtDotPos[l.prod[l.dotPosition]].first.insert(newLine);
-            produtionsAtDotPos[l.prod[l.dotPosition]].second.insert(newLine);
+            if(l.prod[l.dotPosition]!="EMPTY"){//no transitions on empty terminals
+                line newLine{l};
+                newLine.dotPosition+=1;
+                produtionsAtDotPos[l.prod[l.dotPosition]].first.insert(newLine);
+                produtionsAtDotPos[l.prod[l.dotPosition]].second.insert(newLine);
+            }
             //LOG("\t"<<l)
         } 
     }

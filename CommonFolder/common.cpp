@@ -29,32 +29,43 @@ std::ostream& operator<< (std::ostream& out, const token& t){
     return out;
 }
 
+bool determineEpsilonProduction(const vector<string>& vec){
+    if(vec.size()==1){
+        if(vec[0]=="EMPTY"){
+            return true;
+        }
+    }
+    return false;
+}
+bool determineEpsilonProduction(const vector<vector<string>>& vec){
+    bool hasEProd{false};
+    for(const auto& i: vec){
+        if(!i.empty()){
+            if(i.size()==1 && i[0]=="EMPTY"){
+                hasEProd=true;
+                break;
+            }
+        }
+    }
+    return hasEProd;
+}
+
 // symbol
-symbol::symbol() : isTerminal{true}, name{"EMPTY"}, t{}, production_rule{} {}
-symbol::symbol(const string&& n, const vector<vector<string>>&& rules){
-    isTerminal=false;
-    name=n;
-    production_rule = rules;
+symbol::symbol() : isTerminal{true}, hasEpsilonProduction{true}, name{"EMPTY"}, t{}, production_rule{} {}
+symbol::symbol(const string&& n, const vector<vector<string>>&& rules) : isTerminal{false}, name{n}, production_rule{rules}{
+    hasEpsilonProduction = determineEpsilonProduction(rules);
 }
-symbol::symbol(const string&& n,  const vector<string>&& p) : name{n}{
-    isTerminal=false;
-    production_rule.emplace_back(p);
+symbol::symbol(const string&& n,  const vector<string>&& rules) : isTerminal{false} ,name{n}{
+    production_rule.emplace_back(rules);
+    hasEpsilonProduction = determineEpsilonProduction(rules);
 }
-symbol::symbol(const string& n, const vector<string>&& p){
-    name=n;
-    isTerminal=false;
-    production_rule.emplace_back(p);
+symbol::symbol(const string& n, const vector<string>&& rules) : isTerminal{false}, name{n} {
+    production_rule.emplace_back(rules);
+    hasEpsilonProduction = determineEpsilonProduction(rules);
 }
-symbol::symbol(token& t){
-    isTerminal=true;
-    name=t.tag;
-    t=t;
-}
-symbol::symbol(token&& t){
-    isTerminal=true;
-    name=t.tag;
-    t=t;
-}
+symbol::symbol(token& t) : isTerminal{true}, hasEpsilonProduction{false}, name{t.tag}, t{t}{ }
+symbol::symbol(token&& t): isTerminal{true}, hasEpsilonProduction{false}, name{t.tag}, t{t}{ }
+
 std::ostream& operator<< (std::ostream& out, const symbol& sym){
     if(sym.isTerminal){
         if(sym.t.tag == sym.t.terminal){
@@ -87,6 +98,7 @@ std::ostream& operator<< (std::ostream& out, const symbol& sym){
 bool symbol::operator==(const symbol& rhs) const{
     if(this->isTerminal != rhs.isTerminal) {return false;}
     if(this->name != rhs.name) {return false;}
+    if(this->hasEpsilonProduction != rhs.hasEpsilonProduction) {return false;}
     if(this->production_rule != rhs.production_rule) {return false;}
     if(!(this->t == rhs.t)) {return false;}
     return true;

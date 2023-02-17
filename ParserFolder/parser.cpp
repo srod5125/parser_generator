@@ -38,11 +38,18 @@ void Parser::setLexer(const unordered_map<string,regex>& matchingRules){
     lex = Lexer(matchingRules);
 }
 
-Ast Parser::parse(const string& input){
+Ast Parser::parse(string& input){
+    if(lex.isNotSet()){
+        LOG("UNSET LEXER EARLY EXIT")
+        return Ast();
+    }
+    input+="$";//append EOF
     //lex
-    lex.split(input);//TODO: get token vector
+    lex.split(input);
+    LOG(lex)
     auto inputTokens{lex.getTokens()};
 
+    LOG(pT)
     //prime
     pStack.push({0,""});
     move m = pT.getMove(0,inputTokens[pointer].tag);
@@ -50,58 +57,61 @@ Ast Parser::parse(const string& input){
     Ast ast;
     stack<shared_ptr<block>> parallelStack;
     parallelStack.push(std::make_unique<block>(inputTokens[pointer].terminal));
-    // LOG("first")
-    // LOG(m.state<<" "<<getStepChar(m.s))
+    LOG("first")
+    LOG(m.state<<" "<<getStepChar(m.s))
 
-    bool hitNonSRMove = false;
+    bool hitErrMove = false;
 
     while(!(m.s == step::error || m.s == step::accept)){
-        
-            if(m.s == step::shift) {
-                pStack.push({m.state,inputTokens[pointer].tag});
-                parallelStack.push(std::make_unique<block>(inputTokens[pointer].terminal));
-                ++pointer;
-                //LOG("hit shift")
-                //break;
-            }
-            else if(m.s == step::reduce){
-                string val{m.nonterminal};//node creation   
-                //reduce pop off 2*len of production rule
-                shared_ptr<block> tmpBPtr = std::make_unique<block>(val);
-                //LOG(val)
-                if(val == "S"){ ast.head = tmpBPtr; }     
-                for(int i=0;i<m.len;i+=1){
-                    //LOG("here"<<parallelStack.top()->val);
-                    //if(parallelStack.top()){
-                        tmpBPtr->connections.emplace_back(std::move(parallelStack.top()));
-                    //}
-                    parallelStack.pop();//add children
+    
+        if(m.s == step::shift) {
+            pStack.push({m.state,inputTokens[pointer].tag});
+            parallelStack.push(std::make_unique<block>(inputTokens[pointer].terminal));
+            ++pointer;
+            //LOG("hit shift")
+            //break;
+        }
+        else if(m.s == step::reduce){
+            string val{m.nonterminal};//node creation   
+            //reduce pop off 2*len of production rule
+            shared_ptr<block> tmpBPtr = std::make_unique<block>(val);
+            //LOG(val)
+            if(val == "S"){ ast.head = tmpBPtr; }// set start of tree
+            for(int i=0;i<m.len;i+=1){
+                //LOG("here"<<parallelStack.top()->val);
+                //if(parallelStack.top()){
+                    tmpBPtr->connections.emplace_back(std::move(parallelStack.top()));
+                //}
+                if(pStack.size()>1){//prevent empty stack
+                    parallelStack.pop();
                     pStack.pop();
+                    //?LOG("\t\t\t"<<pStack.size())
                 }
-                int gotoState = pStack.top().first;//get state need for goto
-                
-                
-                m = pT.getMove(gotoState,val);
-                //LOG("\tNT: "<<val<<" "<<m.state);
-                //LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
-                
-                //if(m.s == step::error) {break;}//break out early
-                
-                pStack.push({m.state,val});
-                parallelStack.push(std::move(tmpBPtr));
-                //break;
             }
-            else{ 
-                //LOG("hit default")
-                hitNonSRMove = true;
-                break;
-            }
-        
+            int gotoState = pStack.top().first;//get state need for goto
+            
+            
+            m = pT.getMove(gotoState,val);
+            LOG("\tNT: "<<val<<" "<<m.state);
+            LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
+            
+            hitErrMove = m.s == step::error;//break out early
+            
+            pStack.push({m.state,val});
+            parallelStack.push(std::move(tmpBPtr));
+            //break;
+        }
+        else{ 
+            //LOG("hit default")
+            hitErrMove = true;
+            break;
+        }
+    
         //m = pT.getMove(pStack.top());
-        m = hitNonSRMove ? move() : pT.getMove(pStack.top().first,inputTokens[pointer].tag);
+        m = hitErrMove ? move() : pT.getMove(pStack.top().first,inputTokens[pointer].tag);
         
-        // LOG("move")
-        // LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])
+        LOG("move")
+        LOG(m.state<<" "<<getStepChar(m.s)<<"\tTOP "<<pStack.top().first<<" ON: "<<input[pointer])
 
         // string k = m.s == step::error ? "\tgot error" : "\tnope";
         // LOG(k)
@@ -111,10 +121,10 @@ Ast Parser::parse(const string& input){
             m.s = step::error;
         }
 
-        // for(int j=0;j<=pointer && j<input.size();j+=1){
-        //     std::cout << input[j];
-        // }
-        // LOG("")
+        for(int j=0;j<=pointer && j<input.size();j+=1){
+            std::cout << input[j];
+        }
+        LOG("")
     }
     //LOG(ast.head->val)
     
@@ -138,13 +148,14 @@ Ast Parser::parse(const string& input){
     return ast;
 }
 
-Ast Parser::parse(string&& input){
+Ast Parser::parse(string&& input){//TODO: handle unmatched case
     if(lex.isNotSet()){
         LOG("UNSET LEXER EARLY EXIT")
         return Ast();
     }
+    input+="$";//append EOF
     //lex
-    lex.split(input);//TODO: get token vector
+    lex.split(input);
     LOG(lex)
     auto inputTokens{lex.getTokens()};
 
@@ -162,47 +173,50 @@ Ast Parser::parse(string&& input){
     bool hitErrMove = false;
 
     while(!(m.s == step::error || m.s == step::accept)){
-        
-            if(m.s == step::shift) {
-                pStack.push({m.state,inputTokens[pointer].tag});
-                parallelStack.push(std::make_unique<block>(inputTokens[pointer].terminal));
-                ++pointer;
-                //LOG("hit shift")
-                //break;
-            }
-            else if(m.s == step::reduce){
-                string val{m.nonterminal};//node creation   
-                //reduce pop off 2*len of production rule
-                shared_ptr<block> tmpBPtr = std::make_unique<block>(val);
-                //LOG(val)
-                if(val == "S"){ ast.head = tmpBPtr; }     
-                for(int i=0;i<m.len;i+=1){
-                    //LOG("here"<<parallelStack.top()->val);
-                    //if(parallelStack.top()){
-                        tmpBPtr->connections.emplace_back(std::move(parallelStack.top()));
-                    //}
-                    parallelStack.pop();//add children
+    
+        if(m.s == step::shift) {
+            pStack.push({m.state,inputTokens[pointer].tag});
+            parallelStack.push(std::make_unique<block>(inputTokens[pointer].terminal));
+            ++pointer;
+            //LOG("hit shift")
+            //break;
+        }
+        else if(m.s == step::reduce){
+            string val{m.nonterminal};//node creation   
+            //reduce pop off 2*len of production rule
+            shared_ptr<block> tmpBPtr = std::make_unique<block>(val);
+            //LOG(val)
+            if(val == "S"){ ast.head = tmpBPtr; }// set start of tree
+            for(int i=0;i<m.len;i+=1){
+                //LOG("here"<<parallelStack.top()->val);
+                //if(parallelStack.top()){
+                    tmpBPtr->connections.emplace_back(std::move(parallelStack.top()));
+                //}
+                if(pStack.size()>1){//prevent empty stack
+                    parallelStack.pop();
                     pStack.pop();
+                    //?LOG("\t\t\t"<<pStack.size())
                 }
-                int gotoState = pStack.top().first;//get state need for goto
-                
-                
-                m = pT.getMove(gotoState,val);
-                LOG("\tNT: "<<val<<" "<<m.state);
-                LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
-                
-                hitErrMove = m.s == step::error;//break out early
-                
-                pStack.push({m.state,val});
-                parallelStack.push(std::move(tmpBPtr));
-                //break;
             }
-            else{ 
-                //LOG("hit default")
-                hitErrMove = true;
-                break;
-            }
-        
+            int gotoState = pStack.top().first;//get state need for goto
+            
+            
+            m = pT.getMove(gotoState,val);
+            LOG("\tNT: "<<val<<" "<<m.state);
+            LOG("\tNT: "<<m.state<<" "<<getStepChar(m.s)<<" "<<m.nonterminal)
+            
+            hitErrMove = m.s == step::error;//break out early
+            
+            pStack.push({m.state,val});
+            parallelStack.push(std::move(tmpBPtr));
+            //break;
+        }
+        else{ 
+            //LOG("hit default")
+            hitErrMove = true;
+            break;
+        }
+    
         //m = pT.getMove(pStack.top());
         m = hitErrMove ? move() : pT.getMove(pStack.top().first,inputTokens[pointer].tag);
         
@@ -220,7 +234,7 @@ Ast Parser::parse(string&& input){
         for(int j=0;j<=pointer && j<input.size();j+=1){
             std::cout << input[j];
         }
-        // LOG("")
+        LOG("")
     }
     //LOG(ast.head->val)
     
