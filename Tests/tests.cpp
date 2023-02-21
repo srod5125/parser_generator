@@ -15,6 +15,7 @@
 #include "../ParserFolder/ParserTable/parserTable.h"
 #include "../ParserFolder/parser.h"
 #include "../AstFolder/ast.h"
+#include "../GeneratorFolder/generator.h"
 
 
 using std::string;
@@ -442,6 +443,10 @@ void testEpsilonProductions2(){
     LOG(ast)
 
 }
+void testGenerator(){
+    Generator g;
+    g.rules("S = test;");
+}
 //TODO: write more dfa tests
 void runAllTest(){
     //testFirstDfa();
@@ -453,6 +458,7 @@ void runAllTest(){
     //testAST();
     //testAST2();
     //testLexerAndParser();
-    testEpsilonProductions();
+    //testEpsilonProductions();
     //testEpsilonProductions2();
+    testGenerator();
 }

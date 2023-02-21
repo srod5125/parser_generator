@@ -19,12 +19,12 @@ using MatchingRules = unordered_map<string,regex>;
 class Generator{
     private:
         MatchingRules ebnfMatchingRules;
-        Parser ebnfParser;
         Grammar ebnfGrammar;
+        Parser ebnfParser;
 
         MatchingRules userMatchingRules;
-        Parser userParser;
         Grammar userGrammar;
+        Parser userParser;
 
         void disambiguateUserGrammar(); //TODO: preprocess grammar before feeding to parser to disambiguate
 
@@ -35,6 +35,7 @@ class Generator{
         ~Generator();
 
         void rules(const string&);
+        void rules(string&&);
 };
 
 #endif

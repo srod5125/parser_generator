@@ -20,5 +20,6 @@ void testAST2();
 void testLexerAndParser();
 void testEpsilonProductions();
 void testEpsilonProductions2();
+void testGenerator();
 
 #endif

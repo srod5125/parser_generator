@@ -1,5 +1,6 @@
 #include "../ParserFolder/parser.h"
 #include "../CommonFolder/common.h"
+#include "../AstFolder/ast.h"
 
 #include "generator.h"
 
@@ -13,6 +14,7 @@ using std::regex;
 
 using vecOfVec = vector<vector<string>>;
 
+#define LOG(msg) std::cout << msg << std::endl;
 
 Generator::Generator() {
     init();
@@ -22,18 +24,18 @@ void Generator::init() {
     // Parser ebnfParser;
 
     //tokens for ebnf grammar
-    ebnfMatchingRules["TERMINAL"] = regex("[A-Z]+");
-    ebnfMatchingRules["NONTERMINAL"] = regex("[a-z][a-z|\\d]+");
-    ebnfMatchingRules["LITERAL"] = regex("('\\w+')");
-    ebnfMatchingRules["REGEX"] = regex("(/\\w+/)");
-    ebnfMatchingRules["MOD"] = regex("[?|*|+]");
-    ebnfMatchingRules["("] = regex("(");
-    ebnfMatchingRules[")"] = regex(")");
-    ebnfMatchingRules["["] = regex("[");
-    ebnfMatchingRules["]"] = regex("]");
-    ebnfMatchingRules["|"] = regex("|");
-    ebnfMatchingRules["="] = regex("=");
-    ebnfMatchingRules[";"] = regex(";");
+    ebnfMatchingRules["TERMINAL"] = regex(R"([A-Z]+)");
+    ebnfMatchingRules["NONTERMINAL"] = regex(R"([a-z][a-z|\\d]+)");
+    ebnfMatchingRules["LITERAL"] = regex(R"(('\\w+'))");
+    ebnfMatchingRules["REGEX"] = regex(R"((/\\w+/))");
+    ebnfMatchingRules["MOD"] = regex(R"([?|*|+])");
+    ebnfMatchingRules["("] = regex(R"(()");
+    ebnfMatchingRules[")"] = regex(R"())");
+    ebnfMatchingRules["["] = regex(R"([)");
+    ebnfMatchingRules["]"] = regex(R"(])");
+    ebnfMatchingRules["|"] = regex(R"(|)");
+    ebnfMatchingRules["="] = regex(R"(=)");
+    ebnfMatchingRules[";"] = regex(R"(;)");
 
     //grammar rules
     ebnfGrammar["S"]        = symbol("S",vecOfVec{{"RULE_SET"}});
@@ -72,6 +74,19 @@ void Generator::init() {
     ebnfGrammar["="] = symbol({"="});
     ebnfGrammar[";"] = symbol({";"});
 
+    ebnfParser = Parser(ebnfGrammar);
+    ebnfParser.setLexer(ebnfMatchingRules);
+
+
+
+}
+
+void Generator::rules(const string& ruleText){
+
+}
+void Generator::rules(string&& ruleText){
+    Ast ast = ebnfParser.parse(ruleText);
+    LOG(ast)
 }
 
 Generator::~Generator() {}
