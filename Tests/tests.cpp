@@ -445,7 +445,7 @@ void testEpsilonProductions2(){
 }
 void testGenerator(){
     Generator g;
-    g.rules("S = test;");
+    g.rules("s = t; ");
 }
 //TODO: write more dfa tests
 void runAllTest(){

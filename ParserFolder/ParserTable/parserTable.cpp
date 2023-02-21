@@ -260,8 +260,10 @@ void ParserTable::fillInTable(){//TODO: sr conflicts emit err
             for(const auto& l : curr_state.productions){
                 if(l.dotPosition>=l.prod.size() || (l.prod.size()==1 && l.prod[0]=="EMPTY")){//epsilon reduction
                     for(const auto& lk : l.lookahead){
-                        actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
-                        move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction
+                        if(lk != "EMPTY"){
+                            actionTable[curr_state.stateNum][actionColumnMap[lk]] = 
+                            move(step::reduce,l.prod.size(),l.name);//add nontmerinal to reduc instruction
+                        }
                     }
                 }
             }

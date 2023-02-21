@@ -38,6 +38,7 @@ void Parser::setLexer(const unordered_map<string,regex>& matchingRules){
     lex = Lexer(matchingRules);
 }
 
+//TODO: add expected list of tokens when err occurs
 Ast Parser::parse(string& input){
     if(lex.isNotSet()){
         LOG("UNSET LEXER EARLY EXIT")
@@ -159,7 +160,7 @@ Ast Parser::parse(string&& input){//TODO: handle unmatched case
     LOG(lex)
     auto inputTokens{lex.getTokens()};
 
-    LOG(pT)
+    //LOG(pT)
     //prime
     pStack.push({0,""});
     move m = pT.getMove(0,inputTokens[pointer].tag);
