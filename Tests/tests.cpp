@@ -207,7 +207,61 @@ void testDfaClosure(){
     shared_ptr<state> s{d.closure(x)}; //make public to call
     LOG(*s)
 }
+void testDfaClosure2(){
+    unordered_map<string,symbol> ebnfGrammar;
+    ebnfGrammar["S"]        = symbol("S",vecOfVec{{"RST"}});
+    ebnfGrammar["RST"] = symbol("RST",vecOfVec{{"RULE","RST"},{"EMPTY"}});
+    ebnfGrammar["RULE"]     = symbol("RULE",vecOfVec{{"NT_DEC",";"}});//,{"T_DEC",";"}
+    //     terminal decloration
+    //ebnfGrammar["T_DEC"]    = symbol("T_DEC",vecOfVec{{"TERMINAL","=","REGEX"}});
+    //     non terminal decloration
+    ebnfGrammar["NT_DEC"]   = symbol("NT_DEC",vecOfVec{{"NT","=","EXPR"}});
+    ebnfGrammar["EXPR"]     = symbol("EXPR",vecOfVec{
+                                                //{"TERMINAL"},
+                                                //{"LITERAL"},
+                                                {"NT"},
+                                                //{"EXPR", "FOLLOW"}
+                                            });
+    // ebnfGrammar["FOLLOW"]   = symbol("FOLLOW",vecOfVec{
+    //                                             {"EXPR"},
+    //                                             {"|", "EXPR"},
+    //                                             {"[","EXPR","]"},
+    //                                             {"(","EXPR",")"},
+    //                                             {"EMPTY"}
+    //                                         });
+    ebnfGrammar["EMPTY"]    = symbol();
+    //  terminals
+    ebnfGrammar["NT"] = symbol({"NT"});
+    //ebnfGrammar["TERMINAL"] = symbol({"TERMINAL"});
+    //ebnfGrammar["REGEX"] = symbol({"REGEX"});
+    //ebnfGrammar["LITERAL"] = symbol({"LITERAL"});
+    //ebnfGrammar["MOD"] = symbol({"MOD"});
+    // ebnfGrammar["|"] = symbol({"|"});
+    // ebnfGrammar["["] = symbol({"["});
+    // ebnfGrammar["]"] = symbol({"]"});
+    // ebnfGrammar["("] = symbol({"("});
+    // ebnfGrammar[")"] = symbol({")"});
+    ebnfGrammar["="] = symbol({"="});
+    ebnfGrammar[";"] = symbol({";"});
+    ebnfGrammar["$"] = symbol({"$"});
 
+    //state s = state(0,l);
+    Dfa d{ebnfGrammar};
+
+    line l{0,ebnfGrammar["S"],{"$"}};
+    unordered_set<line,line::hash,line::equal> x;
+    x.insert(l);
+
+    shared_ptr<state> s{d.closure(x)}; //make public to call
+    
+    set<string> helper{};
+    string t = "RST";
+    set<string> xF = d.first(t,helper); //make public to test
+    LOG("f")
+    PRINTSET(xF);
+
+    LOG(*s)
+}
 void testGoto1(){
     unordered_map<string,symbol> grammer;
     grammer["S'"] = symbol("S'",vector<string>{"S"});
@@ -452,6 +506,7 @@ void runAllTest(){
     //testFirstDfa();
     //testLexer1();//TODO: test tinfinte loop for unmatched regex (test size of matches != end)
     //testDfaClosure();
+    //testDfaClosure2();
     //testGoto1();
     //testParserTable();
     //testParser();

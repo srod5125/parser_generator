@@ -201,7 +201,7 @@ Dfa::Dfa():grammar{}, globalStateNum{1}, firstCache{}, coreMap{} {
     goToState(*startPtr);
 }
 Dfa::Dfa(unordered_map<string,symbol>& g): globalStateNum{1}, firstCache{}, coreMap{}  {
-    grammar = g;
+    grammar = g;//TODO: grammar should be used not g
 
     symbol s0 = symbol("S'",{"S"}); // TODO replace S with start
     g["S'"] = s0;
@@ -342,7 +342,7 @@ shared_ptr<state> Dfa::closure(const lineSet& lSet){
 
     while(!lSetWithLk.empty()){
         lineSetIter = lSetWithLk.begin();
-        //LOG("\t"<<*lineSetIter);
+        LOG("\t"<<*lineSetIter);
         //std::cin.get();
 
         //if not closed
@@ -371,8 +371,8 @@ EXPR -> nt
                         */
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.size()){
                             set<string> firstHelper{};
-                            x = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
-                            //x.insert(y.begin(),y.end());
+                            set<string> y = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
+                            x.insert(y.begin(),y.end());
                             // LOG("....")
                             //LOG("hit")
                         }
@@ -441,7 +441,8 @@ lineSet Dfa::closure_noState(const lineSet& lSet){
                         //LOG("\t"<<lineSetIter->prod.production_rule[0].size())
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.size()){
                             set<string> firstHelper{};
-                            x = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
+                            set<string> y = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);
+                            x.insert(y.begin(),y.end());
                             //printSet(x);
                             //LOG("hit")
                         }

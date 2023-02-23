@@ -21,5 +21,6 @@ void testLexerAndParser();
 void testEpsilonProductions();
 void testEpsilonProductions2();
 void testGenerator();
+void testDfaClosure2();
 
 #endif
