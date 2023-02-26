@@ -499,7 +499,10 @@ void testEpsilonProductions2(){
 }
 void testGenerator(){
     Generator g;
-    g.rules("s = t; ");
+    g.rules(R"(
+        start = t;
+        t = k | o*;
+    )");
 }
 //TODO: write more dfa tests
 void runAllTest(){

@@ -250,7 +250,7 @@ void ParserTable::fillInTable(){//TODO: sr conflicts emit err
         curr_state = dfaTrace.top();
         dfaTrace.pop();
         if(visited.find(curr_state)==visited.end()){
-            LOG(curr_state)
+            //LOG(curr_state)
             //LOG(curr_state.stateNum << " : " << stHshLk(curr_state))
             //keep track of states to merge
             statesToBeMerged[curr_state].insert(curr_state.stateNum);

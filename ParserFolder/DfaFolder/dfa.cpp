@@ -342,7 +342,7 @@ shared_ptr<state> Dfa::closure(const lineSet& lSet){
 
     while(!lSetWithLk.empty()){
         lineSetIter = lSetWithLk.begin();
-        LOG("\t"<<*lineSetIter);
+        //LOG("\t"<<*lineSetIter);
         //std::cin.get();
 
         //if not closed
@@ -359,16 +359,8 @@ shared_ptr<state> Dfa::closure(const lineSet& lSet){
                         set<string> x = lineSetIter->lookahead;
                         //LOG(lineSetIter->dotPosition+1)
                         //LOG("\t"<<lineSetIter->prod.production_rule[0].size())
-                        //!HERE (closure on state 0 is incorrect)
-                        /*
-S' -> S
-S -> RST
-RST -> RULE RST
-RST -> ''
-RULE -> NT_DEC ;
-NT_DEC -> nt = EXPR
-EXPR -> nt
-                        */
+                        //^ !HERE (closure on state 0 is incorrect) resolved
+
                         if(lineSetIter->dotPosition+1 < lineSetIter->prod.size()){
                             set<string> firstHelper{};
                             set<string> y = first(lineSetIter->prod[lineSetIter->dotPosition+1],firstHelper);

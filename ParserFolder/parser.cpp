@@ -50,7 +50,7 @@ Ast Parser::parse(string& input){
     LOG(lex)
     auto inputTokens{lex.getTokens()};
 
-    LOG(pT)
+    //LOG(pT)
     //prime
     pStack.push({0,""});
     move m = pT.getMove(0,inputTokens[pointer].tag);
@@ -122,8 +122,8 @@ Ast Parser::parse(string& input){
             m.s = step::error;
         }
 
-        for(int j=0;j<=pointer && j<input.size();j+=1){
-            std::cout << input[j];
+        for(int j=0;j<=pointer && j<inputTokens.size();j+=1){
+            std::cout << inputTokens[j].terminal;
         }
         LOG("")
     }

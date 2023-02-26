@@ -28,7 +28,7 @@ void Generator::init() {
     ebnfMatchingRules["NT"] = regex(R"([a-z][a-z|\d]*)");
     ebnfMatchingRules["LITERAL"] = regex(R"(('\w+'))");
     ebnfMatchingRules["REGEX"] = regex(R"((/\w+/))");
-    ebnfMatchingRules["MOD"] = regex(R"([?|*|+])");
+    ebnfMatchingRules["MOD"] = regex(R"([?*+])");
     ebnfMatchingRules["("] = regex("[(]");
     ebnfMatchingRules[")"] = regex("[)]");
     ebnfMatchingRules["["] = regex("[[]");
@@ -39,38 +39,40 @@ void Generator::init() {
     ebnfMatchingRules["$"] = regex("[$]");
 
     //-----------------grammar rules
+    // rst is rule set
     ebnfGrammar["S"]        = symbol("S",vecOfVec{{"RST"}});
     ebnfGrammar["RST"] = symbol("RST",vecOfVec{{"RULE","RST"},{"EMPTY"}});
-    ebnfGrammar["RULE"]     = symbol("RULE",vecOfVec{{"NT_DEC",";"}});//,{"T_DEC",";"}
+    ebnfGrammar["RULE"]     = symbol("RULE",vecOfVec{{"NT_DEC",";"},{"T_DEC",";"}});//
     //     terminal decloration
-    //ebnfGrammar["T_DEC"]    = symbol("T_DEC",vecOfVec{{"TERMINAL","=","REGEX"}});
+    ebnfGrammar["T_DEC"]    = symbol("T_DEC",vecOfVec{{"TERMINAL","=","REGEX"}});
     //     non terminal decloration
     ebnfGrammar["NT_DEC"]   = symbol("NT_DEC",vecOfVec{{"NT","=","EXPR"}});
     ebnfGrammar["EXPR"]     = symbol("EXPR",vecOfVec{
-                                                //{"TERMINAL"},
-                                                //{"LITERAL"},
+                                                {"TERMINAL"},
+                                                {"LITERAL"},
                                                 {"NT"},
-                                                //{"EXPR", "FOLLOW"}
+                                                {"EXPR", "FOLLOW"}
                                             });
-    // ebnfGrammar["FOLLOW"]   = symbol("FOLLOW",vecOfVec{
-    //                                             {"EXPR"},
-    //                                             {"|", "EXPR"},
-    //                                             {"[","EXPR","]"},
-    //                                             {"(","EXPR",")"},
-    //                                             {"EMPTY"}
-    //                                         });
+                //POSSIBLE ERR ON FOLLOW
+    ebnfGrammar["FOLLOW"]   = symbol("FOLLOW",vecOfVec{
+                                                {"EXPR"},
+                                                {"|", "EXPR"},
+                                                {"[","EXPR","]"},
+                                                {"(","EXPR",")"},
+                                                {"MOD"}
+                                            });
     ebnfGrammar["EMPTY"]    = symbol();
     //  terminals
     ebnfGrammar["NT"] = symbol({"NT"});
-    //ebnfGrammar["TERMINAL"] = symbol({"TERMINAL"});
-    //ebnfGrammar["REGEX"] = symbol({"REGEX"});
-    //ebnfGrammar["LITERAL"] = symbol({"LITERAL"});
-    //ebnfGrammar["MOD"] = symbol({"MOD"});
-    // ebnfGrammar["|"] = symbol({"|"});
-    // ebnfGrammar["["] = symbol({"["});
-    // ebnfGrammar["]"] = symbol({"]"});
-    // ebnfGrammar["("] = symbol({"("});
-    // ebnfGrammar[")"] = symbol({")"});
+    ebnfGrammar["TERMINAL"] = symbol({"TERMINAL"});
+    ebnfGrammar["REGEX"] = symbol({"REGEX"});
+    ebnfGrammar["LITERAL"] = symbol({"LITERAL"});
+    ebnfGrammar["MOD"] = symbol({"MOD"});
+    ebnfGrammar["|"] = symbol({"|"});
+    ebnfGrammar["["] = symbol({"["});
+    ebnfGrammar["]"] = symbol({"]"});
+    ebnfGrammar["("] = symbol({"("});
+    ebnfGrammar[")"] = symbol({")"});
     ebnfGrammar["="] = symbol({"="});
     ebnfGrammar[";"] = symbol({";"});
     ebnfGrammar["$"] = symbol({"$"});
