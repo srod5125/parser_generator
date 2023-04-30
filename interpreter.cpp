@@ -29,6 +29,7 @@ int main(){
 */
 
 //g++ -g -std=c++17 $(find . -type f -iregex ".*\.cpp") -o interpreter
+//clang++ -g -std=c++17 $(find . -type f -iregex ".*\.cpp") -o interpreter
 
 
 

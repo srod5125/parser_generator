@@ -24,10 +24,10 @@ void Generator::init() {
     // Parser ebnfParser;
 
     //--------------tokens for ebnf grammar
-    ebnfMatchingRules["TERMINAL"] = regex(R"([A-Z]+)");
-    ebnfMatchingRules["NT"] = regex(R"([a-z][a-z|\d]*)");
-    ebnfMatchingRules["LITERAL"] = regex(R"(('\w+'))");
-    ebnfMatchingRules["REGEX"] = regex(R"((/\w+/))");
+    ebnfMatchingRules["TERMINAL"] = regex(R"([A-Z\d]+)");
+    ebnfMatchingRules["NT"] = regex(R"([\w]+(?![^\/']))");//!HERE working on regex not recognizing new line // ^([^'/\\]([a-z][a-z\\d]*)+$)
+    ebnfMatchingRules["LITERAL"] = regex(R"('[\w]+')");
+    ebnfMatchingRules["REGEX"] = regex(R"(\/[\w]+\/)");
     ebnfMatchingRules["MOD"] = regex(R"([?*+])");
     ebnfMatchingRules["("] = regex("[(]");
     ebnfMatchingRules[")"] = regex("[)]");

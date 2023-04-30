@@ -498,10 +498,13 @@ void testEpsilonProductions2(){
 
 }
 void testGenerator(){
+    
+        // start = t;
+        // t = k | o*| 'literal';
     Generator g;
     g.rules(R"(
-        start = t;
-        t = k | o*;
+        tt = 'lit';
+        PP = /ll/;
     )");
 }
 //TODO: write more dfa tests
