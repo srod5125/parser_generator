@@ -1,4 +1,12 @@
-interpreter.exe
-interpreter
 nvim.appimage
 .vscode/settings.json
+
+lexer.cpp
+parser.cpp
+parser.hpp
+
+parser.output
+
+..gitignore.kate-swp
+
+notes.txt
